@@ -1,0 +1,10 @@
+{
+  "Name": "Qi Exchanger",
+  "Author": "Mizzion",
+  "Version": "1.1.0-beta",
+  "Description": "A mod that lets you exchange your Qi coins for gold.",
+  "UniqueID": "mizzion.qiexchanger",
+  "EntryDll": "QiExchanger.dll",
+  "MinimumApiVersion": "2.10.2",
+  "UpdateKeys": [ "Nexus:1930" ]
+}
