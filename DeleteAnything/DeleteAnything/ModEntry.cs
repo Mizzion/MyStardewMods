@@ -1,19 +1,11 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using DeleteAnything.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
-using StardewValley.Menus;
 using StardewValley.Locations;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
-using StardewValley.Buildings;
-using StardewValley.BellsAndWhistles;
 using SFarmer = StardewValley.Farmer;
 using SObject = StardewValley.Object;
 
@@ -29,25 +21,28 @@ namespace DeleteAnything
         //private SObject @object;
         public override void Entry(IModHelper helper)
         {
-            GameEvents.UpdateTick += this.GameEvents_UpdateTick;
-            ControlEvents.KeyPressed += this.ControlEvents_KeyPressed;
+            helper.Events.GameLoop.UpdateTicked += UpdateTicked;
+            helper.Events.Input.ButtonPressed += ButtonPressed;
+            //GameEvents.UpdateTick += this.GameEvents_UpdateTick;
+            //ControlEvents.KeyPressed += this.ControlEvents_KeyPressed;
         }
 
-        public void GameEvents_UpdateTick(object sender, EventArgs e)
+        public void UpdateTicked(object sender, UpdateTickedEventArgs e)
         {           
         }
-        public void ControlEvents_KeyPressed(object sender, EventArgsKeyPressed e)
+        public void ButtonPressed(object sender, ButtonPressedEventArgs e)
         {
             if(!Context.IsWorldReady)
                 return;
-            if (e.KeyPressed == Keys.Delete)
+            if (e.Button == SButton.Delete)
             {
                 GameLocation curLocation = Game1.currentLocation;
                // FarmHouse house = curLocation is FarmHouse ? curLocation as FarmHouse : null;
                 //Populate furniture dictionary.
                 //furniture = house.furniture;
                 Dictionary<Vector2, Furniture> furniture = new Dictionary<Vector2, Furniture>();
-                curTile = new Vector2((Game1.getMouseX() + Game1.viewport.X) / Game1.tileSize, (Game1.getMouseY() + Game1.viewport.Y) / Game1.tileSize);
+                //curTile = new Vector2((Game1.getMouseX() + Game1.viewport.X) / Game1.tileSize, (Game1.getMouseY() + Game1.viewport.Y) / Game1.tileSize);
+                ICursorPosition curTile = Helper.Input.GetCursorPosition();
                 //coords = curTile;
                 /*
                 if(house != null)
@@ -59,11 +54,11 @@ namespace DeleteAnything
                     }
                 }*/
 
-                bool occupied = curLocation.isTileOccupied(curTile);
+                bool occupied = curLocation.isTileOccupied(curTile.Tile);
                 bool t = curLocation is FarmHouse ? true : false;
 
-                curLocation.Objects.TryGetValue(curTile, out SObject @object);
-                curLocation.terrainFeatures.TryGetValue(curTile, out TerrainFeature @terrain);
+                curLocation.Objects.TryGetValue(curTile.Tile, out SObject @object);
+                curLocation.terrainFeatures.TryGetValue(curTile.Tile, out TerrainFeature @terrain);
 
                 if (@object != null)
                 {
@@ -81,9 +76,10 @@ namespace DeleteAnything
                         new Response("3", "Yes"),
                         new Response("4", "No")
                     };
-                    Game1.currentLocation.createQuestionDialogue($"Are you sure you want to delete this item?", options.ToArray(), new GameLocation.afterQuestionBehavior(this.answer), (NPC)null);                    
+                    //var o = curLocation.objects;
+                    //curLocation.createQuestionDialogue($"Are you sure you want to delete {o.Name}?", options.ToArray(), new GameLocation.afterQuestionBehavior(this.answer), (NPC)null);                    
                 }                
-                this.Monitor.Log($"X:{curTile.X} Y:{curTile.Y} FarmHouse: {t} Occupied: {occupied}\n\n", LogLevel.Alert);                
+                this.Monitor.Log($"X:{curTile.Tile.X} Y:{curTile.Tile.Y} FarmHouse: {t} Occupied: {occupied}\n\n", LogLevel.Alert);                
             }
 
         }

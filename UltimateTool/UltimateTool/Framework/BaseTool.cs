@@ -1,10 +1,5 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Xna.Framework;
 using UltimateTool.Framework.Tools;
-using StardewValley;
-using StardewValley.Locations;
-using StardewValley.TerrainFeatures;
-using xTile.Dimensions;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 using SFarmer = StardewValley.Farmer;
 using SObject = StardewValley.Object;

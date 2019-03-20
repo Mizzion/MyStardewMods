@@ -1,16 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna;
-using Microsoft.Xna.Framework;
-using StardewModdingAPI;
-using StardewValley;
-using StardewValley.Characters;
-using StardewValley.Objects;
-using StardewValley.Menus;
-using StardewValley.TerrainFeatures;
 
 namespace UltimateTool.Framework
 {

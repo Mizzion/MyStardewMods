@@ -1,21 +1,6 @@
-﻿using Harmony;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Globalization;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Xml.Serialization;
-using Microsoft.Xna;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using ArtifactSpotOverHaul.configs;
-using Mizzion.Injectors;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using StardewValley;
-using StardewValley.Locations;
 using SFarmer = StardewValley.Farmer;
 using SObject = StardewValley.Object;
 

@@ -1,9 +1,5 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Xna.Framework;
 using UltimateTool.Framework.Configuration;
-using StardewValley;
-using StardewValley.TerrainFeatures;
-using StardewValley.Tools;
 using SFarmer = StardewValley.Farmer;
 using SObject = StardewValley.Object;
 

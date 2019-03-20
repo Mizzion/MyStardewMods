@@ -1,20 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using Mizzion.Common;
-using Mizzion.Common.Integrations.BetterSprinklers;
-using Mizzion.Common.Integrations.SimpleSprinkler;
-using StardewValley;
-using StardewValley.Locations;
-using StardewValley.TerrainFeatures;
-using StardewValley.Tools;
 using SFarmer = StardewValley.Farmer;
 using SObject = StardewValley.Object;
 

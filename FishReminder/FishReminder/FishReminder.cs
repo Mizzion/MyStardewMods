@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FishReminder.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -12,7 +10,7 @@ using StardewValley.Menus;
 
 namespace FishReminder
 {
-    public class FishReminder : Mod, IAssetEditor
+    public class FishReminder : Mod, IAssetEditor//To do Change the fish dictionary to int, string. That wasy I can cross reference based on int.
     {
         //private string fishNeeded;
 
@@ -22,12 +20,7 @@ namespace FishReminder
         /// <param name="asset">Basic metadata about the asset being loaded.</param>
         public bool CanEdit<T>(IAssetInfo asset)
         {
-            if (asset.AssetNameEquals("Data/mail"))
-            {
-                return true;
-            }
-
-            return false;
+            return asset.AssetNameEquals("Data/mail");
         }
 
         /// <summary>Edit a matched asset.</summary>
@@ -77,15 +70,69 @@ namespace FishReminder
             }
             else if (e.IsDown(SButton.F7))
             {
-                
+                char[] trimmer = { ',' };
                 var f = GetNeededFishLocation();
+                string um = "", des = "", fo = "", t = "", m = "", bw = "", b = "", w = "", s = "", bl = "", ws = "";
+
                 string outter = "";
 
-                foreach (var i in f)
+                var o = from i in f
+                    orderby i.Value
+                    select i;
+
+
+                foreach (var i in o)
                 {
-                    outter += $"{i.Key}({i.Value}), ";
+                    if (i.Value.Contains("Under"))
+                        um += $"{i.Key}, ";
+                    if (i.Value.Contains("Des"))
+                        des += $"{i.Key}, ";
+                    if (i.Value.Contains("For"))
+                        fo += $"{i.Key}, ";
+                    if (i.Value.Contains("Tow"))
+                        t += $"{i.Key}, ";
+                    if (i.Value.Contains("Moun"))
+                        m += $"{i.Key}, ";
+                    if (i.Value.Contains("Back"))
+                        bw += $"{i.Key}, ";
+                    if (i.Value.Contains("Bea"))
+                        b += $"{i.Key}, ";
+                    if (i.Value.Contains("Woods"))
+                        w += $"{i.Key}, ";
+                    if (i.Value.Contains("Sewer"))
+                        s += $"{i.Key}, ";
+                    if (i.Value.Contains("BugLand"))
+                        bl += $"{i.Key}, ";
+                    if (i.Value.Contains("Witch"))
+                        ws += $"{i.Key}, ";
                 }
+
+                var undergroundmine = string.IsNullOrEmpty(um) ? "" : $"Underground Mine^{um.Trim().TrimEnd(trimmer)}^^";
+                var desert = string.IsNullOrEmpty(des) ? "" : $"Desert^{des.Trim().TrimEnd(trimmer)}^^";
+                var forest = string.IsNullOrEmpty(fo) ? "" : $"Forest^{fo.Trim().TrimEnd(trimmer)}^^";
+                var town = string.IsNullOrEmpty(t) ? "" : $"Town^{t.Trim().TrimEnd(trimmer)}^^";
+                var mountain = string.IsNullOrEmpty(m) ? "" : $"Mountain^{m.Trim().TrimEnd(trimmer)}^^";
+                var backwoods = string.IsNullOrEmpty(bw) ? "" : $"Back Woods^{bw.Trim().TrimEnd(trimmer)}^^";
+                var beach = string.IsNullOrEmpty(b) ? "" : $"Beach^{b.Trim().TrimEnd(trimmer)}^^";
+                var woods = string.IsNullOrEmpty(w) ? "" : $"Woods^{w.Trim().TrimEnd(trimmer)}^^";
+                var sewer = string.IsNullOrEmpty(s) ? "" : $"Sewer^{s.Trim().TrimEnd(trimmer)}^^";
+                var bugland = string.IsNullOrEmpty(bl) ? "" : $"Bug Land^{bl.Trim().TrimEnd(trimmer)}^^";
+                var witchswamp = string.IsNullOrEmpty(ws) ? "" : $"Witch Swamp^{ws.Trim().TrimEnd(trimmer)}^^";
+                //populate outter
+                outter =
+                    $"{undergroundmine}{desert}{forest}{town}{mountain}{backwoods}{beach}{woods}{sewer}{bugland}{witchswamp}";
                 Game1.activeClickableMenu = new LetterViewerMenu(outter);
+            }
+            else if (e.IsDown(SButton.F9))
+            {
+                var fish = Helper.Content.Load<Dictionary<int, string> > ("Data\\fish", ContentSource.GameContent);
+                //string[] locData = loc.Value.Split('/')[4 + Utility.getSeasonNumber(Game1.currentSeason)].Split(' ');
+                foreach (var f in fish)
+                {
+                    var fdata = f.Value.Split('/');
+                    Game1.player.fishCaught.Add(f.Key, new int[2] {1, 1});
+                    Monitor.Log($"Added: {fdata[0]} to the list.");
+                }
             }
         }
 
@@ -96,6 +143,10 @@ namespace FishReminder
         {
             var today = SDate.Now();
             var tomorrow = today.AddDays(1);
+
+            string fishNed = GetNeededFish();
+            if (string.IsNullOrEmpty(fishNed))
+                return;
 
             switch (tomorrow.Day)
             {
@@ -133,8 +184,58 @@ namespace FishReminder
         private string GetNeededFish(bool doSeason = true, bool doWeather = false)
         {
             string neededFish = "";
-            char[] trimmer = {','};
+            char[] trimmer = { ',' };
+            var f = GetNeededFishLocation();
+            string um = "", des = "", fo = "", t = "", m = "", bw = "", b = "", w = "", s = "", bl = "", ws = "";
 
+            string outter = "";
+
+            var o = from i in f
+                    orderby i.Value
+                    select i;
+
+
+            foreach (var i in o)
+            {
+                if (i.Value.Contains("Under"))
+                    um += $"{i.Key}, ";
+                if (i.Value.Contains("Des"))
+                    des += $"{i.Key}, ";
+                if (i.Value.Contains("For"))
+                    fo += $"{i.Key}, ";
+                if (i.Value.Contains("Tow"))
+                    t += $"{i.Key}, ";
+                if (i.Value.Contains("Moun"))
+                    m += $"{i.Key}, ";
+                if (i.Value.Contains("Back"))
+                    bw += $"{i.Key}, ";
+                if (i.Value.Contains("Bea"))
+                    b += $"{i.Key}, ";
+                if (i.Value.Contains("Woods"))
+                    w += $"{i.Key}, ";
+                if (i.Value.Contains("Sewer"))
+                    s += $"{i.Key}, ";
+                if (i.Value.Contains("BugLand"))
+                    bl += $"{i.Key}, ";
+                if (i.Value.Contains("Witch"))
+                    ws += $"{i.Key}, ";
+            }
+
+            var undergroundmine = string.IsNullOrEmpty(um) ? "" : $"Underground Mine^{um.Trim().TrimEnd(trimmer)}^^";
+            var desert = string.IsNullOrEmpty(des) ? "" : $"Desert^{des.Trim().TrimEnd(trimmer)}^^";
+            var forest = string.IsNullOrEmpty(fo) ? "" : $"Forest^{fo.Trim().TrimEnd(trimmer)}^^";
+            var town = string.IsNullOrEmpty(t) ? "" : $"Town^{t.Trim().TrimEnd(trimmer)}^^";
+            var mountain = string.IsNullOrEmpty(m) ? "" : $"Mountain^{m.Trim().TrimEnd(trimmer)}^^";
+            var backwoods = string.IsNullOrEmpty(bw) ? "" : $"Back Woods^{bw.Trim().TrimEnd(trimmer)}^^";
+            var beach = string.IsNullOrEmpty(b) ? "" : $"Beach^{b.Trim().TrimEnd(trimmer)}^^";
+            var woods = string.IsNullOrEmpty(w) ? "" : $"Woods^{w.Trim().TrimEnd(trimmer)}^^";
+            var sewer = string.IsNullOrEmpty(s) ? "" : $"Sewer^{s.Trim().TrimEnd(trimmer)}^^";
+            var bugland = string.IsNullOrEmpty(bl) ? "" : $"Bug Land^{bl.Trim().TrimEnd(trimmer)}^^";
+            var witchswamp = string.IsNullOrEmpty(ws) ? "" : $"Witch Swamp^{ws.Trim().TrimEnd(trimmer)}^^";
+            //populate outter
+            //outter =
+                //$"{undergroundmine}{desert}{forest}{town}{mountain}{backwoods}{beach}{woods}{sewer}{bugland}{witchswamp}";
+            /*
             //Open the fish data file, and grab the needed info
             IDictionary<int, string> fish = Game1.content.Load<Dictionary<int, string>>("Data\\fish");
             
@@ -150,9 +251,10 @@ namespace FishReminder
                 {
                     neededFish += $"{fishSplit[0]}, ";
                 }
-            }
+            }*/
             //return neededFish
-            return neededFish.Trim().TrimEnd(trimmer);
+            //return neededFish.Trim().TrimEnd(trimmer);
+            return $"{undergroundmine}{desert}{forest}{town}{mountain}{backwoods}{beach}{woods}{sewer}{bugland}{witchswamp}";
         }
 
         /// <summary>Grabs the fish that a player still needs.</summary>
@@ -177,7 +279,8 @@ namespace FishReminder
                     for (int i = 0; i < locData.Length; i += 2)
                     {
                         string[] fishData = fish[Convert.ToInt32(locData[i])].Split('/');
-                        if (!fishNames.ContainsKey(fishData[0]))
+                        if (!fishNames.ContainsKey(fishData[0]) && 
+                            !Game1.player.fishCaught.ContainsKey(Convert.ToInt32(locData[i])))
                             fishNames.Add(fishData[0], loc.Key);
                     }
                 }

@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-
-namespace FarmHelper.Framework
+﻿namespace FarmHelper.Framework
 {
     internal class ModConfig
     {

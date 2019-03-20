@@ -1,6 +1,4 @@
-﻿using UltimateTool.Framework.Configuration;
-
-namespace UltimateTool.Framework.Configuration
+﻿namespace UltimateTool.Framework.Configuration
 {
    internal class ModConfig
     {

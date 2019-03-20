@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
+﻿using StardewModdingAPI;
 using StardewValley;
 using SObject = StardewValley.Object;
 
@@ -19,7 +15,7 @@ namespace OneSprinklerOneScarecrow.Framework.Overrides
         {
             foreach (var obj in __instance.Objects.Pairs)
             {
-                if (obj.Value.Name == "Haxor Crow")
+                if (obj.Value.Name == "Haxarecrow")
                 {
                     _monitor.Log("No crows ran");
                     return false;

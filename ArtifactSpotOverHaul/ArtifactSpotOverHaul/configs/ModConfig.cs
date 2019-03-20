@@ -1,7 +1,4 @@
-﻿using ArtifactSpotOverHaul.configs;
-
-
-namespace ArtifactSpotOverHaul
+﻿namespace ArtifactSpotOverHaul
 {
     public class ModConfig
     {

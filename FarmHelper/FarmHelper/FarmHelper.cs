@@ -1,19 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using FarmHelper.Framework;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using StardewValley;
-using StardewValley.Buildings;
-using StardewValley.Locations;
-using StardewValley.Menus;
-using StardewValley.TerrainFeatures;
-using StardewValley.Objects;
-using StardewValley.Characters;
 using SFarmer = StardewValley.Farmer;
 using SObject = StardewValley.Object;
 

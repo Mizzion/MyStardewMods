@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using StardewValley;
+﻿using StardewValley;
 using StardewModdingAPI;
 using GrandpasGift.Framework;
 using StardewModdingAPI.Events;

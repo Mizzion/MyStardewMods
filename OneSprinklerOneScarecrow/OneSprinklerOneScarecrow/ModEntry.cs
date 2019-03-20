@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Harmony;
-using Microsoft.Xna.Framework;
 using OneSprinklerOneScarecrow.Framework.Overrides;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;

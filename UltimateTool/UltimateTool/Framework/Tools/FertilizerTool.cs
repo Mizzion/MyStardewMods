@@ -1,8 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using UltimateTool.Framework.Configuration;
-using StardewValley;
-using StardewValley.TerrainFeatures;
-using StardewValley.Tools;
+﻿using UltimateTool.Framework.Configuration;
 using SFarmer = StardewValley.Farmer;
 using SObject = StardewValley.Object;
 
