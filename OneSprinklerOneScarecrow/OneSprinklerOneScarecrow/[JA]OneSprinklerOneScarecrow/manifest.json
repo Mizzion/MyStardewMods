@@ -7,6 +7,6 @@
   "ContentPackFor": {
        "UniqueID": "spacechase0.JsonAssets"
     },
-   "UpdateKeys": [ "Nexus:3633" ],
+  "UpdateKeys": [ "Nexus:3633, ModDrop:661376" ],
    "Dependencies": [ ]
 }
