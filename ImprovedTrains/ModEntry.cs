@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Harmony;
 using ImprovedTrains.Framework.Patches;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewValley;
 using StardewValley.BellsAndWhistles;
-using StardewValley.Locations;
 
 namespace ImprovedTrains
 {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Better_Resource_Clumps.Framework.Configs
+﻿namespace Better_Resource_Clumps.Framework.Configs
 {
     class BetterRcConfig
 {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace IncreaseAnimalHouseMaxPopulation
+﻿namespace IncreaseAnimalHouseMaxPopulation
 {
     public class IncreaseAnimalHouseMaxPopulation
     {

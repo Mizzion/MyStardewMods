@@ -1,6 +1,4 @@
-﻿using System.Configuration;
-using IncreaseAnimalHouseMaxPopulation.Framework.Configs;
-using StardewModdingAPI;
+﻿using StardewModdingAPI;
 
 namespace IncreaseAnimalHouseMaxPopulation.Framework.Configs
 {

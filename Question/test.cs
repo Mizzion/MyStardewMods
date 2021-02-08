@@ -1,16 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework;
-using Question;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using StardewValley;
-using StardewValley.Buildings;
-using StardewValley.Locations;
-using StardewValley.Network;
-using StardewValley.Objects;
-
-namespace MachineSpeedChange
+﻿namespace MachineSpeedChange
 {/*
     public class MachineSpeedChange : Mod
     {

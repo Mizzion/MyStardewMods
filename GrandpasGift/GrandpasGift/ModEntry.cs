@@ -1,13 +1,4 @@
-﻿using StardewValley;
-using StardewModdingAPI;
-using GrandpasGift.Framework;
-using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
-using StardewValley.Menus;
-using StardewValley.Tools;
-using StardewValley.Objects;
-
-namespace GrandpasGift
+﻿namespace GrandpasGift
 {
     public class ModEntry : Mod
     {

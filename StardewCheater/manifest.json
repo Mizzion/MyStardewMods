@@ -1,0 +1,10 @@
+﻿{
+    "Name": "Stardew Cheater",
+    "Author": "Mizzion",
+    "Version": "1.0.0",
+    "Description": "Personal Cheat Mod",
+    "UniqueID": "mizzion.stardewcheater",
+    "EntryDll": "StardewCheater.dll",
+    "MinimumApiVersion": "3.2.0",
+    "UpdateKeys": [ "Nexus:" ]
+}

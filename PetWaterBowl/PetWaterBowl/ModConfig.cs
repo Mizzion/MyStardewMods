@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-
-namespace PetWaterBowl
+﻿namespace PetWaterBowl
 {
     internal class ModConfig
     {

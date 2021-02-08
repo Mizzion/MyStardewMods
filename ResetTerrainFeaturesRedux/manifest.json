@@ -1,0 +1,10 @@
+﻿{
+    "Name": "Reset Terrain Features Redux",
+    "Author": "Mizzion",
+    "Version": "1.0.0",
+    "Description": "Allows the player to clear, reset, or generate terrain features.",
+    "UniqueID": "mizzion.resetterrainfeaturesredux",
+    "EntryDll": "ResetTerrainFeaturesRedux.dll",
+    "MinimumApiVersion": "3.9.0",
+    "UpdateKeys": [ "Nexus:" ]
+}

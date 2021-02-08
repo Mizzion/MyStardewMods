@@ -1,6 +1,4 @@
-﻿using System.Security.Policy;
-
-namespace FishReminder.Framework
+﻿namespace FishReminder.Framework
 {
     internal class FishData
     {
