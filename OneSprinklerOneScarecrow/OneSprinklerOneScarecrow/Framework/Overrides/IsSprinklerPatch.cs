@@ -11,11 +11,6 @@ namespace OneSprinklerOneScarecrow.Framework.Overrides
 {
     internal class IsSprinklerPatch
     {
-        private static IMonitor _monitor;
-        public IsSprinklerPatch(IMonitor monitor)
-        {
-            _monitor = monitor;
-        }
         public static bool Prefix(ref Object __instance, ref bool __result)
         {
             __result = false;
@@ -57,7 +52,7 @@ namespace OneSprinklerOneScarecrow.Framework.Overrides
                 __result = true;
             if (__instance.Name.Contains("Haxor Sprinkler"))
                 __result = true;
-            return !__result;
+            return __result;
 
         }
     }

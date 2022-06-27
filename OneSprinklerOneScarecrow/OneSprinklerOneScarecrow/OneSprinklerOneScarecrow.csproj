@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Assets\HaxorScareCrow.png">
+    <None Update="Assets\HaxorScarecrow.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Assets\HaxorSprinkler.png">

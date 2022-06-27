@@ -39,24 +39,26 @@ namespace OneSprinklerOneScarecrow
 
             
             //Apply Harmony Patches
+            
             var harmony = new Harmony(this.ModManifest.UniqueID);
+            /*
             Monitor.Log("Patching Farm.addCrows with AddCrowsPatch");
             harmony.Patch(
                 original: AccessTools.Method(typeof(Farm), nameof(Farm.addCrows), new Type[] {}),
                 prefix: new HarmonyMethod(typeof(AddCrowsPatch), nameof(AddCrowsPatch.Prefix))
-            );
+            );*/
 
             Monitor.Log("Patching Object.IsSprinkler with IsSprinklerPatch");
             harmony.Patch(
-                original: AccessTools.Method(typeof(SObject), nameof(SObject.IsSprinkler), new Type[] {  }),
+                original: AccessTools.Method(typeof(SObject), nameof(SObject.IsSprinkler)),
                 prefix: new HarmonyMethod(typeof(IsSprinklerPatch), nameof(IsSprinklerPatch.Prefix))
             );
-
+            /*
             Monitor.Log("Patching Object.GetBaseRadiusForSprinkler with GetBaseRadiusForSprinklerPatch");
             harmony.Patch(
                 original: AccessTools.Method(typeof(SObject), nameof(SObject.GetBaseRadiusForSprinkler), new Type[] { }),
                 prefix: new HarmonyMethod(typeof(GetBaseRadiusForSprinklerPatch), nameof(GetBaseRadiusForSprinklerPatch.Prefix))
-            );
+            );*/
 
         }
 
@@ -80,13 +82,14 @@ namespace OneSprinklerOneScarecrow
                         oldImage.Width,
                         System.Math.Max(oldImage.Height, 1200 / 24 * 16)));
                     asset.AsImage().PatchImage(oldImage);
-                    asset.AsImage().PatchImage(sprinkler, targetArea: this.GetRectangle(HaxorSprinkler.ParentSheetIndex));
+                    asset.AsImage().PatchImage(sprinkler, targetArea: GetRectangle(HaxorSprinkler.ParentSheetIndex));
                 });
-            }
+            }/*
             else if (e.NameWithoutLocale.IsEquivalentTo("TileSheets/Craftables"))
             {
                 e.Edit(asset =>
                 {
+                    
                     Texture2D scarecrow = Helper.ModContent.Load<Texture2D>("Assets/HaxorScareCrow.png");
                     Texture2D oldImage = asset.AsImage().Data;
 
@@ -94,16 +97,16 @@ namespace OneSprinklerOneScarecrow
                         oldImage.Width,
                         System.Math.Max(oldImage.Height, 1200 / 8 * 32)));
                     asset.AsImage().PatchImage(oldImage);
-                    asset.AsImage().PatchImage(scarecrow, targetArea: this.GetRectangleCraftables(HaxorScarecrow.ParentSheetIndex));
+                    asset.AsImage().PatchImage(scarecrow, targetArea: GetRectangleCraftables(HaxorScarecrow.ParentSheetIndex));
                 });
                 
-            }
+            }*/
             else if (e.NameWithoutLocale.IsEquivalentTo("Data/ObjectInformation"))
             {
                 e.Edit(asset =>
                 {
                     string ass = $"{HaxorSprinkler.Name}/{HaxorSprinkler.Price}/{HaxorSprinkler.Edibility}/{HaxorSprinkler.Type} {HaxorSprinkler.Category}/{HaxorSprinkler.TranslatedName}/{HaxorSprinkler.TranslatedDescription}";
-                    asset.AsDictionary<int, string>().Data.Add(HaxorSprinkler.ParentSheetIndex, ass);
+                    asset.AsDictionary<string, string>().Data.Add($"{HaxorSprinkler.ItemID}", ass);
                     Monitor.Log($"Added Name: {HaxorSprinkler.Name}({HaxorSprinkler.TranslatedName}) Id: {HaxorSprinkler.ParentSheetIndex}.\r\n {ass}");
                 });
                 
@@ -114,8 +117,18 @@ namespace OneSprinklerOneScarecrow
             {
                 e.Edit(asset =>
                 {
-                    asset.AsDictionary<int, string>().Data.Add(HaxorScarecrow.ParentSheetIndex, $"{HaxorScarecrow.Name}/{HaxorScarecrow.Price}/{HaxorScarecrow.Edibility}/{HaxorScarecrow.Type} {HaxorScarecrow.Category}/{HaxorScarecrow.TranslatedDescription}/true/false/0/{HaxorScarecrow.TranslatedName}");
-                    Monitor.Log($"Added Name: {HaxorScarecrow.Name}({HaxorScarecrow.TranslatedName}). Id: {HaxorScarecrow.ParentSheetIndex}");
+                    asset.AsDictionary<string, string>().Data.Add($"{HaxorScarecrow.ItemID}", $"{HaxorScarecrow.Name}/{HaxorScarecrow.Price}/{HaxorScarecrow.Edibility}/{HaxorScarecrow.Type} {HaxorScarecrow.Category}/{HaxorScarecrow.TranslatedDescription}/true/false/0//{HaxorScarecrow.TranslatedName}/0/Mods\\mizzion.onesprinkleronescarecrow\\Assets");
+                    Monitor.Log($"Added Name: {HaxorScarecrow.Name}({HaxorScarecrow.TranslatedName}). Id: {HaxorScarecrow.ItemID}");
+                    //Testing this shit.
+                    var s = $"{HaxorScarecrow.Name}/{HaxorScarecrow.Price}/{HaxorScarecrow.Edibility}/{HaxorScarecrow.Type} {HaxorScarecrow.Category}/{HaxorScarecrow.TranslatedDescription}/true/false/0//{HaxorScarecrow.TranslatedName}/Mods\\mizzion.onesprinkleronescarecrow\\Assets\\HaxorScareCrow";
+                    var s1= s.Split('/');
+                    var num = 0;
+                    foreach (var item in s1)
+                    {
+                        num++;
+                        var n = num - 1;
+                        Monitor.Log($"{n} : {s1[n]}: {item}");
+                    }
                 });
                 
             }
@@ -140,8 +153,8 @@ namespace OneSprinklerOneScarecrow
                     string isEnSprik = asset.Locale != "en" ? $"/{HaxorSprinkler.TranslatedName}" : "";
                     string isEnScare = asset.Locale != "en" ? $"/{HaxorScarecrow.TranslatedName}" : "";
                     Monitor.Log("Made it to the else");
-                    string sprinklerIngredientsOut = !_config.ActivateHarderIngredients ? $"390 100/Home/{HaxorSprinkler.ParentSheetIndex}/false/null{isEnSprik}" : $"386 10/Home/{HaxorSprinkler.ParentSheetIndex}/false/null{isEnSprik}";
-                    string scarecrowIngredientsOut = !_config.ActivateHarderIngredients ? $"388 100/Home/{HaxorScarecrow.ParentSheetIndex}/true/null{isEnScare}" : $"337 10/Home/{HaxorScarecrow.ParentSheetIndex}/true/null{isEnScare}";
+                    string sprinklerIngredientsOut = !_config.ActivateHarderIngredients ? $"390 100/Home/{HaxorSprinkler.ItemID}/false/null{isEnSprik}" : $"386 10/Home/{HaxorSprinkler.ItemID}/false/null{isEnSprik}";
+                    string scarecrowIngredientsOut = !_config.ActivateHarderIngredients ? $"388 100/Home/{HaxorScarecrow.ItemID}/true/null{isEnScare}" : $"337 10/Home/{HaxorScarecrow.ItemID}/true/null{isEnScare}";
 
                     if (curData.Data.ContainsKey("Haxor Sprinkler"))
                         curData.Data["Haxor Sprinkler"] = sprinklerIngredientsOut;
@@ -159,12 +172,20 @@ namespace OneSprinklerOneScarecrow
                         }
                         catch (Exception ex)
                         {
-                            Monitor.Log($"There was an error editing crafting recipes. {ex.ToString()}");
+                            Monitor.Log($"There was an error editing crafting recipes. {ex}");
                         }
 
                     }
                 });
                 
+            }
+            else if (e.NameWithoutLocale.IsEquivalentTo("Data/ObjectContextTags"))
+            {
+                e.Edit(asset =>
+                {
+                    asset.AsDictionary<string, string>().Data.Add($"{HaxorScarecrow.Name}", "crow_scare, crow_scare_radius_999");
+                    Monitor.Log($"Added context tags for HaxorScarecrow.");
+                });
             }
         }
         /// <summary>
@@ -285,7 +306,7 @@ namespace OneSprinklerOneScarecrow
         }
         
         /// <summary>Get all in-game locations.</summary>
-        private IEnumerable<GameLocation> GetLocations()
+        private static IEnumerable<GameLocation> GetLocations()
         {
             foreach (GameLocation location in Game1.locations)
             {
@@ -302,12 +323,12 @@ namespace OneSprinklerOneScarecrow
         }
 
         //Custom Methods
-        public Rectangle GetRectangle(int id)
+        public static Rectangle GetRectangle(int id)
         {
             return new Rectangle(id % 24 * 16, id / 24 * 16, 16, 16);
         }
 
-        public Rectangle GetRectangleCraftables(int id)
+        public static Rectangle GetRectangleCraftables(int id)
         {
             return new Rectangle(id % 8 * 16, id / 8 * 32, 16, 32);
         }

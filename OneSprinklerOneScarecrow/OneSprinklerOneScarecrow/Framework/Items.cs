@@ -16,7 +16,8 @@ namespace OneSprinklerOneScarecrow.Framework
         public const string Name = "Haxor Sprinkler";
         public static string TranslatedName = "";
         public static string TranslatedDescription = "";
-        public static int ParentSheetIndex = 622;//1120;
+        public static string ItemID = "Mizzion.HaxorSprinkler";
+        public static int ParentSheetIndex = 0;
         public const int Price = 2000;
         public const int Edibility = -300;
         public const int Category = StardewValley.Object.CraftingCategory;
@@ -38,7 +39,8 @@ namespace OneSprinklerOneScarecrow.Framework
         public const string Name = "Haxor Scarecrow";
         public static string TranslatedName = "";
         public static string TranslatedDescription = "";
-        public static int ParentSheetIndex = 93;//PetterSeen273;//300;
+        public static string ItemID = "Mizzion.HaxorScarecrow";
+        public static int ParentSheetIndex = 0;
         public const int Price = 2000;
         public const int Edibility = -300;
         public const int Category = StardewValley.Object.BigCraftableCategory;

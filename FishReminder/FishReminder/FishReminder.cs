@@ -130,7 +130,7 @@ namespace FishReminder
                 foreach (var f in fish)
                 {
                     var fdata = f.Value.Split('/');
-                    Game1.player.fishCaught.Add(f.Key, new int[2] {1, 1});
+                    Game1.player.fishCaught.Add(f.Key.ToString(), new int[2] {1, 1});
                     Monitor.Log($"Added: {fdata[0]} to the list.");
                 }
             }
@@ -265,7 +265,7 @@ namespace FishReminder
              Dictionary<string, string> fishNames = new Dictionary<string, string>();
 
             //Open the fish data file, and grab the needed info
-            IDictionary<int, string> fish = Game1.content.Load<Dictionary<int, string>>("Data\\fish");
+            IDictionary<string, string> fish = Game1.content.Load<Dictionary<string, string>>("Data\\fish");
 
             //Open Location, so we can gather the fish data based on it
             IDictionary<string, string> locations = Game1.content.Load<Dictionary<string, string>>("Data\\locations");
@@ -278,9 +278,9 @@ namespace FishReminder
                 {
                     for (int i = 0; i < locData.Length; i += 2)
                     {
-                        string[] fishData = fish[Convert.ToInt32(locData[i])].Split('/');
+                        string[] fishData = fish[locData[i]].Split('/');
                         if (!fishNames.ContainsKey(fishData[0]) && 
-                            !Game1.player.fishCaught.ContainsKey(Convert.ToInt32(locData[i])))
+                            !Game1.player.fishCaught.ContainsKey(locData[i]))
                             fishNames.Add(fishData[0], loc.Key);
                     }
                 }

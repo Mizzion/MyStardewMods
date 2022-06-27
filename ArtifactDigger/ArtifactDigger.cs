@@ -22,7 +22,7 @@ namespace ArtifactDigger
         private static Texture2D _buildingPlacementTiles;
         private List<Vector2> _location, _digLocation;
 
-        private readonly bool _isDebugging = false;
+        private readonly bool _isDebugging = true;
 
 
         /// <summary>
@@ -162,11 +162,26 @@ namespace ArtifactDigger
         public void DoScan()
         {
             GameLocation currentLocation = Game1.currentLocation;
-            Game1.player.MagneticRadius = _radius * _magneticRadius;
+            //Game1.player.MagneticRadius = _radius * _magneticRadius;
+            //Lets add the new 1.6 Buff
+            Buff buff = new Buff(
+                buff_id: "Mizzion.ArtifactDigger/GetArtifacts",
+                display_name: "Artifact Grabber",
+                icon_texture: this.Helper.ModContent.Load<Texture2D>("assets/bufficon.png"),
+                icon_sheet_index: 0,
+                duration: 10_000,
+                buff_effects: new StardewValley.Buffs.BuffEffects()
+                {
+                    magneticRadius = { _radius * _magneticRadius }
+                }
+                );
+            Game1.player.applyBuff(buff);
             if(_isDebugging)
                 Monitor.Log($"Cur Radius: {Game1.player.MagneticRadius}, Old Radius: {_magneticRadius}");
             int sec = 0;
             getDigSpots();
+            if (_digLocation is null)
+                Monitor.Log("_digLocation was null", LogLevel.Debug);
             foreach (var i in _digLocation)
             {
                 currentLocation.Objects.TryGetValue(i, out SObject @object);
@@ -177,11 +192,7 @@ namespace ArtifactDigger
                 h.DoFunction(currentLocation, Convert.ToInt32(i.X * 64f), Convert.ToInt32(i.Y * 64f), 0, Game1.player);
             }
             
-            //Wait 5 Seconds and reset Magnetic Radius
-            for (int num = 0; num < 4; num++)
-                sec++;
-            if (sec == 5)
-                Game1.player.MagneticRadius = _magneticRadius;
+            
             
         }
 
@@ -199,10 +210,13 @@ namespace ArtifactDigger
 
             foreach (var i in gridRadius)
             {
+                
+                
                 var g = i;
-                currentLocation.Objects.TryGetValue(g, out SObject @object);
+                currentLocation.objects.TryGetValue(g, out SObject @object);
 
-                if (@object is { ParentSheetIndex: 590 })
+
+                if (@object?.QualifiedItemID == "(O)590")
                     _location.Add(g);
             }
         }
@@ -218,10 +232,11 @@ namespace ArtifactDigger
 
             foreach (var i in gridRadius)
             {
+                
                 var g = i;
-                currentLocation.Objects.TryGetValue(g, out SObject @object);
+                currentLocation.objects.TryGetValue(g, out SObject @object);
 
-                if (@object is { ParentSheetIndex: 590 })
+                if (@object?.QualifiedItemID == "(O)590")
                     _digLocation.Add(g);
             }
         }        
@@ -265,10 +280,16 @@ namespace ArtifactDigger
 
                 if (@terrain is FruitTree ft)
                 {
-                    if (ft.fruitsOnTree.Value > 0)
+                    var fruits = ft.fruitObjectsOnTree.ToList();
+                    foreach(var f in fruits)
                     {
                         ft.performUseAction(i, currentLocation);
                     }
+                    /*
+                    if (fruits > 0)
+                    {
+                        ft.performUseAction(i, currentLocation);
+                    }*/
                 }
             }
         }

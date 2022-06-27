@@ -369,11 +369,11 @@ namespace FarmCleaner
                 //Resource Clumps
                 foreach (var clumps in farm.resourceClumps.ToList())
                 {
-                    if (clumps.parentSheetIndex.Value == 600)
+                    if (clumps.parentSheetIndex.Value == "600")
                         _stump.Add(clumps.tile.Value, clumps);
-                    if (clumps.parentSheetIndex.Value == 602)
+                    if (clumps.parentSheetIndex.Value == "602")
                         _largelog.Add(clumps.tile.Value, clumps);
-                    if (clumps.parentSheetIndex.Value == 672)
+                    if (clumps.parentSheetIndex.Value == "672")
                         _largestone.Add(clumps.tile.Value, clumps);
                 }
             }
@@ -407,11 +407,11 @@ namespace FarmCleaner
                 //Resource Clumps
                 foreach (var clumps in loc.resourceClumps.ToList())
                 {
-                    if (clumps.parentSheetIndex.Value == 600)
+                    if (clumps.parentSheetIndex.Value == "600")
                         _stump.Add(clumps.tile.Value, clumps);
-                    if (clumps.parentSheetIndex.Value == 602)
+                    if (clumps.parentSheetIndex.Value == "602")
                         _largelog.Add(clumps.tile.Value, clumps);
-                    if (clumps.parentSheetIndex.Value == 672)
+                    if (clumps.parentSheetIndex.Value == "672")
                         _largestone.Add(clumps.tile.Value, clumps);
                 }
             }
@@ -976,11 +976,11 @@ namespace FarmCleaner
         {
             var seedId = tree.treeType.Value switch
             {
-                1 => //Oak
+                "1" => //Oak
                     309,
-                2 => //Maple
+                "2" => //Maple
                     310,
-                3 => //Pine
+                "3" => //Pine
                     311,
                 _ => 309
             };
@@ -998,6 +998,7 @@ namespace FarmCleaner
             Item i = new SObject(itemId, amount);
             return i;
         }
+        
         internal enum TreeType
         {
             Oak = Tree.bushyTree,
