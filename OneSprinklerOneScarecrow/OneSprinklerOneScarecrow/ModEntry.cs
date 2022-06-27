@@ -117,7 +117,7 @@ namespace OneSprinklerOneScarecrow
             {
                 e.Edit(asset =>
                 {
-                    asset.AsDictionary<string, string>().Data.Add($"{HaxorScarecrow.ItemID}", $"{HaxorScarecrow.Name}/{HaxorScarecrow.Price}/{HaxorScarecrow.Edibility}/{HaxorScarecrow.Type} {HaxorScarecrow.Category}/{HaxorScarecrow.TranslatedDescription}/true/false/0//{HaxorScarecrow.TranslatedName}/0/Mods\\mizzion.onesprinkleronescarecrow\\Assets");
+                    asset.AsDictionary<string, string>().Data.Add($"{HaxorScarecrow.ItemID}", $"{HaxorScarecrow.Name}/{HaxorScarecrow.Price}/{HaxorScarecrow.Edibility}/{HaxorScarecrow.Type} {HaxorScarecrow.Category}/{HaxorScarecrow.TranslatedDescription}/true/false/0//{HaxorScarecrow.TranslatedName}/Mods\\mizzion.onesprinkleronescarecrow\\Assets");
                     Monitor.Log($"Added Name: {HaxorScarecrow.Name}({HaxorScarecrow.TranslatedName}). Id: {HaxorScarecrow.ItemID}");
                     //Testing this shit.
                     var s = $"{HaxorScarecrow.Name}/{HaxorScarecrow.Price}/{HaxorScarecrow.Edibility}/{HaxorScarecrow.Type} {HaxorScarecrow.Category}/{HaxorScarecrow.TranslatedDescription}/true/false/0//{HaxorScarecrow.TranslatedName}/Mods\\mizzion.onesprinkleronescarecrow\\Assets\\HaxorScareCrow";
