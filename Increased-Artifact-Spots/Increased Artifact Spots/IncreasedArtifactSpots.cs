@@ -65,7 +65,7 @@ namespace Increased_Artifact_Spots
                     int randomWidth = Game1.random.Next(loc.Map.DisplayWidth / Game1.tileSize);
                     int randomHeight = Game1.random.Next(loc.Map.DisplayHeight / Game1.tileSize);
                     Vector2 newLoc = new Vector2(randomWidth, randomHeight);
-                    if (!loc.isTileLocationTotallyClearAndPlaceable(newLoc) ||
+                    if (!loc.CanItemBePlacedHere(newLoc) ||
                         loc.getTileIndexAt(randomWidth, randomHeight, "AlwaysFront") != -1 ||
                         (loc.getTileIndexAt(randomWidth, randomHeight, "Front") != -1 ||
                          loc.isBehindBush(newLoc)) ||
@@ -74,7 +74,7 @@ namespace Increased_Artifact_Spots
                           loc.doesTileHaveProperty(randomWidth, randomHeight, "Type", "Back") == null ||
                           !loc.doesTileHaveProperty(randomWidth, randomHeight, "Type", "Back").Equals("Grass"))) ||
                         (loc.Name.Equals("Forest") && randomWidth >= 93 && randomHeight <= 22)) continue;
-                    loc.objects.Add(newLoc, new Object(newLoc, 590, 1));
+                    loc.objects.Add(newLoc, new Object(590, 1));
                     locations.Add(new Tuple<string, Vector2>(loc.Name, newLoc));
                     //locDictionary.Add(loc.Name, newLoc);
                     SpawnedSpots++;

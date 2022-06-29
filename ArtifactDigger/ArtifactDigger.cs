@@ -345,7 +345,7 @@ namespace ArtifactDigger
         /// </summary>
         /// <param name="tile">The tile location</param>
         /// <returns></returns>
-        public Rectangle AbsoluteTile(Vector2 tile)
+        public static Rectangle AbsoluteTile(Vector2 tile)
         {
             Vector2 loc = tile * Game1.tileSize;
             return new Rectangle(Convert.ToInt32(loc.X), Convert.ToInt32(loc.Y), Game1.tileSize, Game1.tileSize);
