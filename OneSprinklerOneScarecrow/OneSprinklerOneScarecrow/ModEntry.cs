@@ -170,7 +170,7 @@ namespace OneSprinklerOneScarecrow
             {
                 e.Edit(asset =>
                 {
-                    asset.AsDictionary<string, string>().Data.Add($"{HaxorScarecrow.Name}", "crow_scare, crow_scare_radius_999");
+                    asset.AsDictionary<string, string>().Data.Add($"{HaxorScarecrow.Name}", "crow_scare, crow_scare_radius_300");
                     Monitor.Log($"Added context tags for HaxorScarecrow.");
                 });
             }
@@ -210,15 +210,14 @@ namespace OneSprinklerOneScarecrow
             {
                 Game1.getFarm().objects.Remove(i.Key);
                 var newSprinkler = new SObject(HaxorSprinkler.ItemID, 1);
-                var newScare = new SObject(HaxorScarecrow.ItemID, 1);
-                var replacedWith = i.Value.Name.Contains("Sprinkler") ? $"Replaced with {HaxorSprinkler.ItemID}" : $"{HaxorScarecrow.ItemID} was added to your inventory.";
+                var newScare = new SObject(i.Key, HaxorScarecrow.ItemID);
+                var replacedWith = i.Value.Name.Contains("Sprinkler") ? $"Replaced with {HaxorSprinkler.ItemID}" : $"Replaced with {HaxorScarecrow.ItemID}";
                 if (i.Value.Name.Contains("Sprinkler"))
                     Game1.getFarm().objects.Add(i.Key, newSprinkler);
                 if (i.Value.Name.Contains("Scare"))
                 {
+                    //newScare.bigCraftable.Value = true;
                     Game1.getFarm().objects.Add(i.Key, newScare);
-                    Item it = Utility.CreateItemByID($"(BC){HaxorScarecrow.ItemID}", 1);
-                    Game1.player.addItemToInventory(it);
                 }
                     
 

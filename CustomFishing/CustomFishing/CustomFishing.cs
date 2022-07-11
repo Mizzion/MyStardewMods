@@ -103,7 +103,7 @@ namespace CustomFishing
                 }
                 if (Game1.activeClickableMenu is BobberBar bobberMenu)
                 {
-                    GetFish(Helper.Reflection.GetField<int>(bobberMenu, "whichFish").GetValue());
+                    GetFish(Helper.Reflection.GetField<string>(bobberMenu, "whichFish").GetValue());
                     _fishingMsg = "Hooked Fish:\n\r" + _fishName;
                     _showMessage = true;
 
@@ -218,9 +218,9 @@ namespace CustomFishing
                     break;
             }
         }
-        private void GetFish(int fish)
+        private void GetFish(string fish)
         {
-            var dFish = Game1.content.Load<Dictionary<int, string>>("Data\\Fish");
+            var dFish = Game1.content.Load<Dictionary<string, string>>("Data\\Fish");
             if (dFish.ContainsKey(fish))
             {
                 var fishArray = dFish[fish].Split('/');

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using ConfigureMachineOutputs.Framework;
 using ConfigureMachineOutputs.Framework.Patches;
-using Harmony;
+using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -40,7 +40,7 @@ namespace ConfigureMachineOutputs
             //Harmony Original Code credit goes to Cat from the SDV Modding Discord, I modified his Harmony code.
             try
             {
-                HarmonyInstance Harmony = HarmonyInstance.Create("mizzion.configuremachineOutputs");
+                var Harmony = new Harmony(this.ModManifest.UniqueID);
 
                 //Now we set up the patches, will use a dictionary, just in case I need to expand later. Idea of using Harmony this way came from Cat#2506's mod  from the SDV discord
                 IDictionary<string, Type> replacements = new Dictionary<string, Type>
@@ -55,7 +55,7 @@ namespace ConfigureMachineOutputs
                 //Still not sure how I want to do the input/Outputs......
                 
                 if (helper.ModRegistry.IsLoaded("Platonymous.CustomFarming"))
-                    {
+                {
                         try
                         {
                             //typesToPatch.Add(Type.GetType("CustomFarmingRedux.CustomMachine, CustomFarmingRedux"));
@@ -66,7 +66,7 @@ namespace ConfigureMachineOutputs
                             this.Monitor.Log("Failed to add support for CFR Machines.", LogLevel.Trace);
                             this.Monitor.Log(e.ToString(), LogLevel.Debug);
                         }
-                    }
+                }
 
                 //Go through and set up the patching
                 foreach (Type t in typesToPatch)

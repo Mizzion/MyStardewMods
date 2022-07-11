@@ -179,9 +179,13 @@ namespace ArtifactDigger
             if(_isDebugging)
                 Monitor.Log($"Cur Radius: {Game1.player.MagneticRadius}, Old Radius: {_magneticRadius}");
             int sec = 0;
-            getDigSpots();
+            GetDigSpots();
             if (_digLocation is null)
+            {
                 Monitor.Log("_digLocation was null", LogLevel.Debug);
+                return;
+            }
+                
             foreach (var i in _digLocation)
             {
                 currentLocation.Objects.TryGetValue(i, out SObject @object);
@@ -221,7 +225,7 @@ namespace ArtifactDigger
             }
         }
 
-        private void getDigSpots()
+        private void GetDigSpots()
         {
             Vector2[] gridRadius = GetTileGrid(Game1.player.getTileLocation(), _radius).ToArray();
 

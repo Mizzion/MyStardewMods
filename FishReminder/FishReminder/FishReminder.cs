@@ -35,15 +35,15 @@ namespace FishReminder
             {
                 e.Edit(asset =>
                 {
-                    var i18n = Helper.Translation;
+                    var i18N = Helper.Translation;
                     IDictionary<string, string> data = asset.AsDictionary<string, string>().Data;
-                    data["fishReminderDaily"] = i18n.Get("fishReminderDaily",
+                    data["fishReminderDaily"] = i18N.Get("fishReminderDaily",
                         new { player = Game1.player.Name, fish = GetNeededFish() });
 
-                    data["fishReminderWeekly"] = i18n.Get("fishReminderWeekly",
+                    data["fishReminderWeekly"] = i18N.Get("fishReminderWeekly",
                         new { player = Game1.player.Name, fish = GetNeededFish() });
 
-                    data["fishReminderMonthly"] = i18n.Get("fishReminderMonthly",
+                    data["fishReminderMonthly"] = i18N.Get("fishReminderMonthly",
                         new { player = Game1.player.Name, fish = GetNeededFish() });
                 });
             }
@@ -154,7 +154,8 @@ namespace FishReminder
                     if (_config.SendReminderMailMonthly)
                     {
                         Helper.GameContent.InvalidateCache("Data/mail");
-                        Game1.player.mailForTomorrow.Add("fishReminderMonthly");
+                        if(!Game1.player.mailbox.Contains("fishReminderMonthly"))
+                            Game1.player.mailForTomorrow.Add("fishReminderMonthly");
                     }
                     break;
                 case 8:
@@ -163,14 +164,16 @@ namespace FishReminder
                     if (_config.SendReminderMailWeekly)
                     {
                         Helper.GameContent.InvalidateCache("Data/mail");
-                        Game1.player.mailForTomorrow.Add("fishReminderWeekly");
+                        if (!Game1.player.mailbox.Contains("fishReminderWeekly"))
+                            Game1.player.mailForTomorrow.Add("fishReminderWeekly");
                     }
                     break;
                 default:
                     if (_config.SendReminderMailDaily)
                     {
                         Helper.GameContent.InvalidateCache("Data/mail");
-                        Game1.player.mailForTomorrow.Add("fishReminderDaily");
+                        if (!Game1.player.mailbox.Contains("fishReminderDaily"))
+                            Game1.player.mailForTomorrow.Add("fishReminderDaily");
                     }
 
                     break;
