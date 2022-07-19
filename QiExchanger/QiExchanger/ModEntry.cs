@@ -69,12 +69,12 @@ namespace QiExchanger
             if (e.NewMenu is DialogueBox db && Game1.player.currentLocation.Name.Contains("Club"))
             {
                 var str = db.dialogues.ToArray().Aggregate("", (current, d) => current + d);
-                if(str.Contains("Buy 100 Qi Coins for 1,000g"))
+                if(str.Contains(_i18N.Get("original.text")))
                 {   
                     //Lets close the dialogue
                     db.closeDialogue();
                     DoMenu("main");
-                }  
+                }
             }
         }
         
@@ -101,19 +101,28 @@ namespace QiExchanger
                   break;
               case "Sell":
                   Log("Made it to the DoMenu Sell switch");
+                  if (Game1.activeClickableMenu is not null && Game1.activeClickableMenu is DialogueBox db &&
+                      Game1.player.currentLocation.Name.Contains("Club"))
+                  {
+                      var str = db.dialogues.ToArray().Aggregate("", (current, d) => current + d);
+                      Log($"Dialogue was: {str}");
+                
+                      db.closeDialogue();
+                  }
                   if (!hasQiCoins)
                   {
                       break;
                   }
                   var sellResponses = new[]
                   {
-                      new Response("100", _i18N.Get("option.one")),
+                      new Response("100qi", _i18N.Get("option.one")),
                       new Response("1000", _i18N.Get("option.two")),
                       new Response("10000", _i18N.Get("option.three")),
                       new Response("100000", _i18N.Get("option.four")),
                       new Response("1000000", _i18N.Get("option.five"))
                   };
                   Game1.currentLocation.createQuestionDialogue(_i18N.Get("main.exchange.text", new{ player_name = player.Name, qi_amount = player.clubCoins, exchange_rate = _config.ExchangeRate}), sellResponses, DoAnswers);
+                  
                   break;
             }
         }
@@ -125,13 +134,8 @@ namespace QiExchanger
         /// <param name="answer">The answer chosen</param>
         private void DoAnswers(Farmer who, string answer)
         {
-            if (Game1.activeClickableMenu is not null && Game1.activeClickableMenu is DialogueBox db &&
-                Game1.player.currentLocation.Name.Contains("Club"))
-            {
-                var str = db.dialogues.ToArray().Aggregate("", (current, d) => current + d);
-                Log($"Dialogue was: {str}");
-                db.closeDialogue();
-            }
+            
+            
             switch (answer)
             {
                 case "Buy":
@@ -141,9 +145,27 @@ namespace QiExchanger
                     Log("Made it to the DoAnswer sell switch");
                     DoMenu("Sell");
                     break;
-                case "100":
+                case "100qi":
                     Log("Made it to the DoAnswer 100 switch");
-                    DoExchange(100);
+                    if (Game1.player.clubCoins > 0)
+                    {
+                        if (Game1.player.clubCoins >= 100)
+                        {
+                            var outer = _config.ExchangeRate > 0 ? (100 * _config.ExchangeRate) : 0;
+                            Game1.player.clubCoins -= 100;
+                            Game1.player.Money += Math.Max(0, outer);
+                            Game1.drawObjectDialogue(_i18N.Get("do.exchange", new{ qi_coins = 100, q_coins = outer}));
+                        }
+                        else
+                        {
+                            Game1.drawObjectDialogue(_i18N.Get("not.enough.qicoins"));
+                        }
+                    }
+                    else
+                    {
+                        Log("A negative value was pass to the exchange", LogLevel.Trace, true);
+                    }
+                    //DoExchange(100);
                     break;
                 default:
                     Log("Hit the default");

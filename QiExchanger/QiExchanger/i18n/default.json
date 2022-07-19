@@ -1,4 +1,5 @@
 {
+  "original.text": "Buy 100 Qi Coins for 1,000g?",
   "main.text": "Hello {{player_name}}, please choose an option from below.",
   "main.text.option.one": "Buy QiCoins",
   "main.text.option.two": "Sell QiCoins",
