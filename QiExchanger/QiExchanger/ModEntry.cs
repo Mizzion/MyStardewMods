@@ -151,6 +151,10 @@ namespace QiExchanger
             }
         }
 
+        /// <summary>
+        /// Process the Amount we should exchange
+        /// </summary>
+        /// <param name="val">The amount of clubCoins we're trading in.</param>
         private void DoExchange(int val)
         {
             Log("Made it to the exchange method");
