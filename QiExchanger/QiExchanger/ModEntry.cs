@@ -54,6 +54,11 @@ namespace QiExchanger
             }
         }
 
+        /// <summary>
+        /// Event that gets triggered when a menu is opened
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e">Event Args</param>
         private void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
             if (Game1.activeClickableMenu is null)
@@ -75,6 +80,10 @@ namespace QiExchanger
         
         //Custom Voids
 
+        /// <summary>
+        /// Process the Dialogue Menus
+        /// </summary>
+        /// <param name="menuType">The menu type. So we can switch into it.</param>
         private void DoMenu(string menuType)
         {
             var player = Game1.player;
@@ -109,6 +118,11 @@ namespace QiExchanger
             }
         }
 
+        /// <summary>
+        /// Process the Dialogue answers
+        /// </summary>
+        /// <param name="who">The player</param>
+        /// <param name="answer">The answer chosen</param>
         private void DoAnswers(Farmer who, string answer)
         {
             if (Game1.activeClickableMenu is not null && Game1.activeClickableMenu is DialogueBox db &&
