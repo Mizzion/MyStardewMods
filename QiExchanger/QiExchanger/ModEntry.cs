@@ -13,9 +13,7 @@ namespace QiExchanger
     public class ModEntry : Mod
     {
         private ModConfig _config;
-        //private int ExchangeRate;
-        //private bool interceptedFirstDialogue = false;
-        private bool _isDebugging = true;
+        private const bool IsDebugging = true;
 
         private ITranslationHelper _i18N;
 
@@ -66,15 +64,12 @@ namespace QiExchanger
                 return;
             }
 
-            if (e.NewMenu is DialogueBox db && Game1.player.currentLocation.Name.Contains("Club"))
+            if (e.NewMenu is DialogueBox db && 
+                Game1.player.currentLocation.Name.Contains("Club") && 
+                db.dialogues.ToArray().Aggregate("", (current, d) => current + d).Contains(_i18N.Get("original.text")))
             {
-                var str = db.dialogues.ToArray().Aggregate("", (current, d) => current + d);
-                if(str.Contains(_i18N.Get("original.text")))
-                {   
-                    //Lets close the dialogue
-                    db.closeDialogue();
-                    DoMenu("main");
-                }
+                db.closeDialogue();
+                DoMenu("main");
             }
         }
         
@@ -88,84 +83,144 @@ namespace QiExchanger
         {
             var player = Game1.player;
             var hasQiCoins = player.clubCoins > 0;
+            var hasMoney = player.Money > 0;
             switch (menuType)
             {
               case "main":
+              {
                   Log("Made it to the DoMenu main switch");
                   var mainResponses = new[]
                   {
                       new Response("Buy", _i18N.Get("main.text.option.one")),
                       new Response("Sell", _i18N.Get("main.text.option.two"))
                   };
-                  Game1.currentLocation.createQuestionDialogue(_i18N.Get("main.text", new {player_name = Game1.player.Name}), mainResponses, DoAnswers);
+                  Game1.currentLocation.createQuestionDialogue(
+                      _i18N.Get("main.text", new { player_name = Game1.player.Name }), mainResponses, DoAnswers);
                   break;
-              case "Sell":
-                  Log("Made it to the DoMenu Sell switch");
-                  if (Game1.activeClickableMenu is not null && Game1.activeClickableMenu is DialogueBox db &&
-                      Game1.player.currentLocation.Name.Contains("Club"))
-                  {
-                      var str = db.dialogues.ToArray().Aggregate("", (current, d) => current + d);
-                      Log($"Dialogue was: {str}");
-                
-                      db.closeDialogue();
-                  }
-                  if (!hasQiCoins)
-                  {
-                      break;
-                  }
-                  var sellResponses = new[]
-                  {
-                      new Response("100qi", _i18N.Get("option.one")),
-                      new Response("1000", _i18N.Get("option.two")),
-                      new Response("10000", _i18N.Get("option.three")),
-                      new Response("100000", _i18N.Get("option.four")),
-                      new Response("1000000", _i18N.Get("option.five"))
-                  };
-                  Game1.currentLocation.createQuestionDialogue(_i18N.Get("main.exchange.text", new{ player_name = player.Name, qi_amount = player.clubCoins, exchange_rate = _config.ExchangeRate}), sellResponses, DoAnswers);
+              }
+              case "Buy":
+              {
+                  var buyResponses = new List<Response>();
                   
+                  if (player.Money >= (100 * 10) && hasMoney)
+                      buyResponses.Add(new Response("100money", _i18N.Get("option.one")));
+                  if (player.Money >= (1000 * 10) && hasMoney)
+                      buyResponses.Add(new Response("1000money", _i18N.Get("option.two")));
+                  if (player.Money >= (10000 * 10) && hasMoney)
+                      buyResponses.Add(new Response("10000money", _i18N.Get("option.three")));
+                  if (player.Money >= (100000 * 10) && hasMoney)
+                      buyResponses.Add(new Response("100000money", _i18N.Get("option.four")));
+                  if (player.Money >= (1000000 * 10) && hasMoney)
+                      buyResponses.Add(new Response("1000000money", _i18N.Get("option.five")));
+                  if (hasMoney)
+                  {
+                      buyResponses.Add(new Response("exit", "None Today"));
+                      Game1.currentLocation.createQuestionDialogue(_i18N.Get("main.money.exchange.text", new { player_name = player.Name, amt_money = player.Money }), buyResponses.ToArray(), DoAnswers);
+                  }
+                  else
+                  {
+                      Game1.drawObjectDialogue(_i18N.Get("no.money"));
+                  }
                   break;
+              }
+              case "Sell":
+              {
+                  Log("Made it to the DoMenu Sell switch");
+                  
+                  var sellResponses = new List<Response>();
+                  
+                  if (player.clubCoins >= 100 && hasQiCoins)
+                      sellResponses.Add(new Response("100", _i18N.Get("option.one")));
+                  if (player.clubCoins >= 1000 && hasQiCoins)
+                      sellResponses.Add(new Response("1000", _i18N.Get("option.two")));
+                  if (player.clubCoins >= 10000 && hasQiCoins)
+                      sellResponses.Add(new Response("10000", _i18N.Get("option.three")));
+                  if (player.clubCoins >= 100000 && hasQiCoins)
+                      sellResponses.Add(new Response("100000", _i18N.Get("option.four")));
+                  if (player.clubCoins >= 1000000 && hasQiCoins)
+                      sellResponses.Add(new Response("1000000", _i18N.Get("option.five")));
+                  if (hasQiCoins)
+                  {
+                      sellResponses.Add(new Response("exit", "None Today"));
+                      Game1.currentLocation.createQuestionDialogue(_i18N.Get("main.exchange.text", new { player_name = player.Name, qi_amount = player.clubCoins, exchange_rate = _config.ExchangeRate }), sellResponses.ToArray(), DoAnswers);
+                  }
+                  else
+                  {
+                      Game1.drawObjectDialogue(_i18N.Get("no.qi.coins"));
+                  }
+                  break;
+              }
             }
         }
 
         /// <summary>
         /// Process the Dialogue answers
         /// </summary>
-        /// <param name="who">The player</param>
+        /// <param name="who">The farmer</param>
         /// <param name="answer">The answer chosen</param>
         private void DoAnswers(Farmer who, string answer)
         {
-            
-            
             switch (answer)
             {
                 case "Buy":
-                    Log("Will be the DoAnswer buy menu");
+                    Log("Made it to the DoAnswer buy menu");
+                    Game1.currentLocation.lastQuestionKey = "Buy";
+                    Game1.afterDialogues = DoBuyMenu;
                     break;
                 case "Sell":
                     Log("Made it to the DoAnswer sell switch");
-                    DoMenu("Sell");
+                    Game1.currentLocation.lastQuestionKey = "Sell";
+                    Game1.afterDialogues = DoSellMenu;
                     break;
-                case "100qi":
+                case "100":
                     Log("Made it to the DoAnswer 100 switch");
-                    if (Game1.player.clubCoins > 0)
-                    {
-                        if (Game1.player.clubCoins >= 100)
-                        {
-                            var outer = _config.ExchangeRate > 0 ? (100 * _config.ExchangeRate) : 0;
-                            Game1.player.clubCoins -= 100;
-                            Game1.player.Money += Math.Max(0, outer);
-                            Game1.drawObjectDialogue(_i18N.Get("do.exchange", new{ qi_coins = 100, q_coins = outer}));
-                        }
-                        else
-                        {
-                            Game1.drawObjectDialogue(_i18N.Get("not.enough.qicoins"));
-                        }
-                    }
-                    else
-                    {
-                        Log("A negative value was pass to the exchange", LogLevel.Trace, true);
-                    }
-                    //DoExchange(100);
+                    Game1.currentLocation.lastQuestionKey = "100";
+                    DoExchange(100);
+                    break;
+                case "1000":
+                    Log("Made it to the DoAnswer 1000 switch");
+                    Game1.currentLocation.lastQuestionKey = "1000";
+                    DoExchange(1000);
+                    break;
+                case "10000":
+                    Log("Made it to the DoAnswer 10000 switch");
+                    Game1.currentLocation.lastQuestionKey = "10000";
+                    DoExchange(10000);
+                    break;
+                case "100000":
+                    Log("Made it to the DoAnswer 100000 switch");
+                    Game1.currentLocation.lastQuestionKey = "100000";
+                    DoExchange(100000);
+                    break;
+                case "1000000":
+                    Log("Made it to the DoAnswer 1000000 switch");
+                    Game1.currentLocation.lastQuestionKey = "1000000";
+                    DoExchange(1000000);
+                    break;
+                case "100money":
+                    Log("Made it to the DoAnswer 100money switch");
+                    Game1.currentLocation.lastQuestionKey = "100money";
+                    DoBuyExchange(100);
+                    break;
+                case "1000money":
+                    Log("Made it to the DoAnswer 1000money switch");
+                    Game1.currentLocation.lastQuestionKey = "1000money";
+                    DoBuyExchange(1000);
+                    break;
+                case "10000money":
+                    Log("Made it to the DoAnswer 10000money switch");
+                    Game1.currentLocation.lastQuestionKey = "10000money";
+                    DoBuyExchange(10000);
+                    break;
+                case "100000money":
+                    Log("Made it to the DoAnswer 100000money switch");
+                    Game1.currentLocation.lastQuestionKey = "100000money";
+                    DoBuyExchange(100000);
+                    break;
+                case "1000000money":
+                    Log("Made it to the DoAnswer 1000000money switch");
+                    Game1.currentLocation.lastQuestionKey = "1000000money";
+                    DoBuyExchange(1000000);
                     break;
                 default:
                     Log("Hit the default");
@@ -173,6 +228,49 @@ namespace QiExchanger
             }
         }
 
+        /// <summary>
+        /// Void to summon the buy menu. Otherwise it bugs out.
+        /// </summary>
+        private void DoBuyMenu()
+        {
+            DoMenu("Buy");
+        }
+        
+        /// <summary>
+        /// Void to summon the sell menu. Otherwise it bugs out.
+        /// </summary>
+        private void DoSellMenu()
+        {
+            DoMenu("Sell");
+        }
+        
+        /// <summary>
+        /// Process the amount of club coins to buy
+        /// </summary>
+        /// <param name="val">The amount the player wants to buy</param>
+        private void DoBuyExchange(int val)
+        {
+            Log("Made it to the BuyExchange method");
+            if (val > 0)
+            {
+                var cost = val * 10;
+                if (Game1.player.Money >= cost)
+                {
+                    Game1.player.Money -= cost;
+                    Game1.player.clubCoins += val;
+                    Game1.drawObjectDialogue(_i18N.Get("do.buy.exchange", new { amount = val, g_coins = cost }));
+                }
+                else
+                {
+                    Game1.drawObjectDialogue(_i18N.Get("not.enough.money"));
+                }
+            }
+            else
+            {
+                Log("A negative value was pass to the buyexchange", LogLevel.Trace, true);
+            }
+        }
+        
         /// <summary>
         /// Process the Amount we should exchange
         /// </summary>
@@ -187,7 +285,7 @@ namespace QiExchanger
                     var outer = _config.ExchangeRate > 0 ? (val * _config.ExchangeRate) : 0;
                     Game1.player.clubCoins -= val;
                     Game1.player.Money += Math.Max(0, outer);
-                    Game1.drawObjectDialogue(_i18N.Get("do.exchange", new{ qi_coins = val, q_coins = outer}));
+                    Game1.drawObjectDialogue(_i18N.Get("do.exchange", new{ qi_coins = val, g_coins = outer}));
                 }
                 else
                 {
@@ -208,7 +306,7 @@ namespace QiExchanger
         /// <param name="bypassDebugging">Whether or not we should do the log anyways.</param>
         private void Log(string msg, LogLevel level = LogLevel.Trace, bool bypassDebugging = false)
         {
-            if(_isDebugging || bypassDebugging)
+            if(IsDebugging || bypassDebugging)
                 Monitor.Log($"{msg}\r\n", level);
         }
 
