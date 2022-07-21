@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -13,7 +12,7 @@ namespace QiExchanger
     public class ModEntry : Mod
     {
         private ModConfig _config;
-        private const bool IsDebugging = true;
+        private const bool IsDebugging = false;
 
         private ITranslationHelper _i18N;
 

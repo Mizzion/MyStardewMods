@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -16,28 +15,6 @@ namespace EnhancedRelationships
         private IDictionary<string, int> GaveNpcGift = new Dictionary<string, int>();
         private IDictionary<string, string> NpcGifts = new Dictionary<string, string>();
         private bool debugging = true;
-
-        /*
-        public bool CanEdit<T>(IAssetInfo asset)
-        {
-            return asset.AssetNameEquals(@"Data\mail");
-        }
-        public void Edit<T>(IAssetData asset)
-        {
-            NpcGifts = GetNpcGifts();
-            var i18n = Helper.Translation;
-            foreach (var d in NpcGifts)
-            {
-                IDictionary<string, string> npc = asset.AsDictionary<string, string>().Data;
-                npc["birthDayMail" + d.Key] = i18n.Get("npc_mail", new { npc_name = d.Key, npc_gift = d.Value });
-            }
-        }
-
-        //EndMail Stuff
-        */
-
-        
-
 
         public override void Entry(IModHelper helper)
         {

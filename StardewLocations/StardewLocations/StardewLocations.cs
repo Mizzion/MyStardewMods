@@ -28,10 +28,10 @@ namespace StardewLocations
         /// <param name="name">The in-game location name.</param>
         private string getLocationName(string name, GameLocation loc)
         {
-            var i18n = Helper.Translation;
+            var i18N = Helper.Translation;
             
             
-            return "Current Location:\n\r" + i18n.Get(name, new
+            return "Current Location:\n\r" + i18N.Get(name, new
             {
                 farm_name = Game1.player.farmName,
                 player_name = Game1.player.Name,
