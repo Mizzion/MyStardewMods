@@ -20,7 +20,7 @@
   "bank.getLoan.title" : "Get a Loan",
   "bank.getLoan.description" : "Welcome {{player_name}}, please enter how much G you're looking to borrow. A interest of {{loan_interest}}% will be added on for service fees. You can currently borrow: {{max_loan}}G (You've earned {{total_money_earned}}G total).",
   "bank.getLoan.cantGetThatMuch" : "You can't get a loan of {{amt}}G.",
-  "bank.getLoan.stillOwer" : "You sitll owe {{loan_owed}}G on an outstanding loan. You can't get another one yet.",
+  "bank.getLoan.stillOwer" : "You still owe {{loan_owed}}G on an outstanding loan. You can't get another one yet.",
   "bank.getLoan.loanTaken" : "You have taken out a loan of {{loan}}G. You paid {{loan_interest}} in interest.",
   "bank.payLoan.title" : "Pay a Loan",
   "bank.payLoan.description" : "Welcome {{player_name}}, please enter how much of your loan you want to pay off. You currently owe: {{loan_owed}}G.",

@@ -12,7 +12,7 @@ namespace BankOfFerngill.Framework.Menu
     public class BankMenu : IClickableMenu
     {
         private readonly IMonitor _monitor;
-        private readonly ITranslationHelper _i18n;
+        private readonly ITranslationHelper _i18N;
         private readonly BoFConfig _config;
         private readonly BankData _bankData;
 
@@ -46,7 +46,7 @@ namespace BankOfFerngill.Framework.Menu
         {
             initialize(_xPos, _yPos, UiWidth, UiHeight);
             _monitor = monitor;
-            _i18n = i18N;
+            _i18N = i18N;
             _config = config;
             _bankData = bankData;
             _doneBehaviour = doneBehaviour;

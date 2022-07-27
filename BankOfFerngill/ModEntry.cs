@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using BankOfFerngill.Framework;
 using BankOfFerngill.Framework.Configs;
 using BankOfFerngill.Framework.Data;
 using BankOfFerngill.Framework.Menu;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -16,13 +18,15 @@ namespace BankOfFerngill
         private BoFConfig _config;
         private ITranslationHelper _i18N;
         private IModEvents _events;
+        private MobilePhoneApi _mobileApi;
+        private IGenericModConfigMenuApi _cfgMenu;
         private BankData _bankData;
-        private bool Debugging;
-        private int _maxLoan = 0;
-        private int _loanOwed = 0;
-        private int _lostAmt = 0;
-        private int _gainedAmt = 0;
-        private int _giftAmt = 0;
+        private bool _debugging;
+        private int _maxLoan;
+        private int _loanOwed;
+        private int _lostAmt;
+        private int _gainedAmt;
+        private int _giftAmt;
 
         private readonly List<Vector2> _vaultCoords = new()
         {
@@ -65,7 +69,11 @@ namespace BankOfFerngill
             new Vector2(51, 6)
         };
 
-        private Vector2 _jojaMartCoords = new Vector2(24, 24);
+        private readonly List<Vector2> _jojaMartCoords = new()
+        {
+            new Vector2(24, 23),
+            new Vector2(24, 24)
+        }; 
         
         
         /// <summary>
@@ -99,23 +107,25 @@ namespace BankOfFerngill
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            var cfgMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
-            if (cfgMenu is null) return;
+            //Generic Mod Config Menu.
+            #region Generic Moc Config Menu
+            _cfgMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (_cfgMenu is null) return;
             
             //Register mod
-            cfgMenu.Register(
+            _cfgMenu.Register(
                 mod: ModManifest,
                 reset: () => _config =  new BoFConfig(),
                 save: () => Helper.WriteConfig(_config)
                 );
             
-            cfgMenu.AddSectionTitle(
+            _cfgMenu.AddSectionTitle(
                 mod: ModManifest,
                 text: () => "Bank of Ferngill Settings",
                 tooltip: null
                 );
             
-            cfgMenu.AddNumberOption(
+            _cfgMenu.AddNumberOption(
                 mod: ModManifest,
                 name: () => "Base Banking Interest",
                 tooltip: () => "The base value that gets calculated into the daily interest for any money in the bank",
@@ -123,7 +133,7 @@ namespace BankOfFerngill
                 setValue: value => _config.BaseBankingInterest = value
             );
             
-            cfgMenu.AddBoolOption(
+            _cfgMenu.AddBoolOption(
                 mod: ModManifest,
                 getValue: () => _config.EnableRandomEvents,
                 setValue: value => _config.EnableRandomEvents = value,
@@ -131,7 +141,7 @@ namespace BankOfFerngill
                 tooltip:() => "Enable Random Events, that happens during the nightly update. Win money, Lose money and so on. (Coming Soon)"
             );
             
-            cfgMenu.AddBoolOption(
+            _cfgMenu.AddBoolOption(
                 mod: ModManifest,
                 getValue: () => _config.EnableVaultRoomDeskActivation,
                 setValue: value => _config.EnableVaultRoomDeskActivation = value,
@@ -139,13 +149,13 @@ namespace BankOfFerngill
                 tooltip:() => "Enable if you want to bypass needing the vault room completed to activate the bank."
             );
             
-            cfgMenu.AddSectionTitle(
+            _cfgMenu.AddSectionTitle(
                 mod: ModManifest,
                 text: () => "Loan Settings",
                 tooltip: null
                 );
             
-            cfgMenu.AddNumberOption(
+            _cfgMenu.AddNumberOption(
                 mod: ModManifest,
                 name: () => "Loan Interest",
                 tooltip: () => "The base value that gets calculated into the interest for any loan you take out.",
@@ -153,7 +163,7 @@ namespace BankOfFerngill
                 setValue: value => _config.LoanSettings.LoanBaseInterest = value
             );
             
-            cfgMenu.AddBoolOption(
+            _cfgMenu.AddBoolOption(
                 mod: ModManifest,
                 getValue: () => _config.LoanSettings.PayBackLoanDaily,
                 setValue: value => _config.LoanSettings.PayBackLoanDaily = value,
@@ -161,7 +171,7 @@ namespace BankOfFerngill
                 tooltip:() => "If enabled you will pay back a portion of the loan each night. If possible"
             );
             
-            cfgMenu.AddNumberOption(
+            _cfgMenu.AddNumberOption(
                 mod: ModManifest,
                 name: () => "Percentage of Loan to Pay Back Daily",
                 tooltip: () => "Percent of Loan Paid Daily",
@@ -169,14 +179,27 @@ namespace BankOfFerngill
                 setValue: value => _config.LoanSettings.PercentageOfLoanToPayBackDaily = value
             );
             
-            cfgMenu.AddBoolOption(
+            _cfgMenu.AddBoolOption(
                 mod: ModManifest,
                 getValue: () => _config.LoanSettings.EnableUnlimitedLoansAtOnce,
                 setValue: value => _config.LoanSettings.EnableUnlimitedLoansAtOnce = value,
                 name: () => "Unlimited Loans",
                 tooltip:() => "If enabled you will be able to have any number of loans at once."
             );
+            #endregion
             
+            #region MobilePhone
+
+            _mobileApi = Helper.ModRegistry.GetApi<MobilePhoneApi>("aedenthorn.MobilePhone");
+            if (_mobileApi != null)
+            {
+                var appIcon = Helper.ModContent.Load<Texture2D>(Path.Combine("assets", "bank_phone_icon.png"));
+                var hasLoaded = _mobileApi.AddApp(Helper.ModRegistry.ModID, "Bank of Ferngill",DoBanking, appIcon);
+                Monitor.Log($"Loaded Bank of Ferngills Mobile Phone app successfully: {hasLoaded}", LogLevel.Debug);
+            }
+
+            #endregion
+
         }
 
         private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
@@ -190,12 +213,12 @@ namespace BankOfFerngill
                 Monitor.Log("The config file was reloaded.");
             }
 
-            if (e.IsDown(SButton.NumPad4) && Debugging)
+            if (e.IsDown(SButton.NumPad4) && _debugging)
             {
                 DoBanking();
             }
 
-            if (e.IsDown(SButton.F10) && Debugging)
+            if (e.IsDown(SButton.F10) && _debugging)
             {
                 var stockTanked = 0;
                 var stockRose = 0;
@@ -205,57 +228,59 @@ namespace BankOfFerngill
                 var nothingDone = 0;
                 
                 //DoRandomEvent();
-                for (var i = 0; i < 20; i++)
+                for (var i = 0; i < 27; i++)
                 {
-                    var r = Game1.random.NextDouble();
-                    var ran = new Random();
+                    var ra = Game1.random.NextDouble();
+                    var luck = Game1.player.DailyLuck;
+                   
+                    var str = "";
+                    
+                    if(ra < 0.05 + luck)
+                        str = $"< {0.05f + luck} = Debt Paid";
+                    else if (ra < 0.07f + luck)
+                        str = $"< {0.07f + luck} = Account Hacked";
+                    else if (ra < 0.10f + luck)
+                        str = $"< {0.10f + luck} = Customer Appreciation";
+                    else if (ra < 0.15f + luck)
+                        str = $"< {0.15f + luck} = Stock Rose";
+                    else if (ra < 0.20f + luck)
+                        str = $"< {0.20f + luck} = Stock Tanked";
+                    Monitor.Log($"Random was: {ra} {str}",LogLevel.Alert);
+                    
+                    if(ra < 0.05 + luck)
+                        debtPaid++;
+                    else if (ra < 0.07f + luck)
+                        accountHacked++;
+                    else if (ra < 0.10f + luck)
+                        customerAppreciation++;
+                    else if (ra < 0.15f + luck)
+                        stockRose++;
+                    else if (ra < 0.20f + luck)
+                        stockTanked++;
+                    else
+                        nothingDone++;
                     /*
-                    switch (ran.NextDouble())
-                    {
-                        case < .05:
-                            debtPaid++;
-                            break;
-                        case < .07:
-                            accountHacked++;
-                            break;
-                        case < .10:
-                            customerAppreciation++;
-                            break;
-                        case < .15:
-                            stockRose++;
-                            break;
-                        case < .20:
-                            stockTanked++;
-                            break;
-                        default:
-                            nothingDone++;
-                            break;
-                        
-                    }*/
-
-                    var ra = ran.NextDouble();
-                    Monitor.Log($"Random was: {ra}",LogLevel.Alert);
-
                     switch (ra)
                     {
-                        case < .05:
+                        case < 0.05f:
                             debtPaid++;
-                            continue;
-                        case < .07:
+                            break;
+                        case < 0.07f:
                             accountHacked++;
-                            continue;
-                        case < .10:
+                            break;
+                        case < 0.10f:
                             customerAppreciation++;
-                            continue;
-                        case < .15:
+                            break;
+                        case < 0.15f:
                             stockRose++;
-                            continue;
-                        case < .20:
+                            break;
+                        case < 0.20f:
                             stockTanked++;
-                            continue;
-                    }
+                            break;
+                    }*/
                 }
                 Monitor.Log($"StockTanked: {stockTanked}, StockRose: {stockRose}, CustomerAppreciation: {customerAppreciation}, AccountHacked: {accountHacked}, DebtPaid: {debtPaid}, NothingDone: {nothingDone}", LogLevel.Warn);
+                Monitor.Log($"Lets check CalculatePercentage 10. {CalculatePercentage(10)}, 25. {CalculatePercentage(25)}, 50. {CalculatePercentage(50)} , 75. {CalculatePercentage(75)}");
             }
             if(e.IsDown(SButton.Escape) && Game1.activeClickableMenu is BankMenu or BankInfoMenu)
             {
@@ -264,7 +289,8 @@ namespace BankOfFerngill
             if (e.IsDown(SButton.MouseRight) && 
                 (Game1.currentLocation.Name.Contains("Community") && ((_vaultCoords.Contains(Game1.currentCursorTile) && Game1.player.mailReceived.Contains("ccVault")) || 
                                                                       (_config.EnableVaultRoomDeskActivation && _deskCords.Contains(Game1.currentCursorTile) && Game1.player.mailReceived.Contains("ccVault")))) || 
-                (Game1.currentLocation.Name.Contains("JojaMart") && _jojaMartCoords == Game1.currentCursorTile) && Game1.player.mailReceived.Contains("jojaVault"))
+                (Game1.currentLocation.Name.Contains("JojaMart") && (_jojaMartCoords.Contains(Game1.currentCursorTile)) && Game1.player.mailReceived.Contains("jojaVault")) || 
+                (_config.EnableVaultRoomDeskActivation && _jojaMartCoords.Contains(Game1.currentCursorTile) && Game1.player.mailReceived.Contains("jojaVault")))
             {
                 DoBanking();
             }
@@ -285,47 +311,47 @@ namespace BankOfFerngill
             _maxLoan = 0;
             
             //Enable or disable Debugging Based on FarmerName
-            Debugging = Game1.player.Name.Contains("Vrillion");
+            _debugging = Game1.player.Name.Contains("Vrillion");
         }
 
         private void OnDayEnding(object sender, DayEndingEventArgs e)
         {
             //Write the bank data to the save before it actually saves.
-            if (_bankData is not null)
-            {
-                if(_bankData.MoneyInBank > 0)
-                    _bankData.MoneyInBank += CalculateInterest(_bankData.MoneyInBank, _bankData.BankInterest);
-
-                var loanOwed = _bankData.LoanedMoney - _bankData.MoneyPaidBack;
-                if (_config.LoanSettings.PayBackLoanDaily && Game1.player.Money >=
-                    CalculateInterest(_bankData.LoanedMoney, _config.LoanSettings.PercentageOfLoanToPayBackDaily))
-                {
-                    var total = loanOwed > CalculateInterest(_bankData.LoanedMoney, _config.LoanSettings.PercentageOfLoanToPayBackDaily)
-                        ? CalculateInterest(_bankData.LoanedMoney, _config.LoanSettings.PercentageOfLoanToPayBackDaily)
-                        : loanOwed;
-                    _bankData.MoneyPaidBack += total;
-                    
-                    Game1.player.Money -= total;
-
-                    if (_bankData.MoneyPaidBack == _bankData.LoanedMoney && _bankData.TotalNumberOfLoans > 0)
-                    {
-                        _bankData.MoneyPaidBack = 0;
-                        _bankData.LoanedMoney = 0;
-                        _bankData.TotalNumberOfLoans = 0;
-                        _bankData.NumberOfLoansPaidBack++;
-                    }
-                    
-                }
-                
-                //Do Random Event.
-                if(_config.EnableRandomEvents && _bankData.MoneyInBank > 0)
-                    DoRandomEvent();
-                
-                //Write save data.
-                Helper.Data.WriteSaveData(ModManifest.UniqueID, _bankData);
-            }
-               
+            if (_bankData is null) return;
             
+            if(_bankData.MoneyInBank > 0)
+                _bankData.MoneyInBank += CalculateInterest(_bankData.MoneyInBank, _bankData.BankInterest);
+
+            var loanOwed = _bankData.LoanedMoney - _bankData.MoneyPaidBack;
+            
+            if (_config.LoanSettings.PayBackLoanDaily && Game1.player.Money >=
+                CalculateInterest(_bankData.LoanedMoney, _config.LoanSettings.PercentageOfLoanToPayBackDaily) && loanOwed > 0)
+            {
+                var total = loanOwed > CalculateInterest(_bankData.LoanedMoney, _config.LoanSettings.PercentageOfLoanToPayBackDaily)
+                    ? CalculateInterest(_bankData.LoanedMoney, _config.LoanSettings.PercentageOfLoanToPayBackDaily)
+                    : loanOwed;
+                _bankData.MoneyPaidBack += total;
+                    
+                Game1.player.Money -= total;
+
+                if (_bankData.MoneyPaidBack == _bankData.LoanedMoney && _bankData.TotalNumberOfLoans > 0)
+                {
+                    _bankData.MoneyPaidBack = 0;
+                    _bankData.LoanedMoney = 0;
+                    _bankData.TotalNumberOfLoans = 0;
+                    _bankData.NumberOfLoansPaidBack++;
+                }
+                    
+            }
+                
+            //Do Random Event.
+            if(_config.EnableRandomEvents && _bankData.MoneyInBank > 0)
+                DoRandomEvent();
+                
+            //Write save data.
+            Helper.Data.WriteSaveData(ModManifest.UniqueID, _bankData);
+
+
         }
 
         private void OnSaved(object sender, SavedEventArgs e)
@@ -356,7 +382,9 @@ namespace BankOfFerngill
             if (Game1.activeClickableMenu is not null)
                 return;
 
-            _maxLoan = CalculateInterest(Convert.ToInt32(Game1.player.totalMoneyEarned), 10);;
+            _mobileApi?.SetAppRunning(true);
+
+            _maxLoan = CalculateInterest(Convert.ToInt32(Game1.player.totalMoneyEarned), 10);
             _loanOwed = _bankData.LoanedMoney - _bankData.MoneyPaidBack;
                 
             //Dialogue Responses
@@ -390,6 +418,7 @@ namespace BankOfFerngill
                         _ => Game1.activeClickableMenu = null
                     };
                 });
+            _mobileApi?.SetAppRunning(false);
 
         }
         
@@ -405,71 +434,77 @@ namespace BankOfFerngill
             _giftAmt = GetRandomAmt(1, GetRandomAmt(1, CalculateInterest(_bankData.MoneyInBank > 0 ? _bankData.MoneyInBank : 0, _bankData.BankInterest)));
             var hackedAmt = GetPercentage(_bankData.MoneyInBank, 75);
             
-            if(Debugging)
+            if(_debugging)
                 Monitor.Log($"Random: {rand} and check Value was {0.05 + Game1.player.DailyLuck}");
             
             //Now we invalidate the mail, this way the correct values get added.
             Helper.GameContent.InvalidateCache("Data/mail");
             
             //Now we do our calculations for events.
-
-            switch (rand)
+            if (rand > 10)
             {
-                case > 20:
-                {
-                    Game1.player.mailForTomorrow.Add("bankAccountHacked");
-                    if(Debugging)
-                        Monitor.Log($"AccountHacked Lost: {hackedAmt}");
-                    break;
-                }
-                case > 15:
+                if (_debugging)
+                    Monitor.Log($"Rand was: {rand}", LogLevel.Info);
+                return;
+            }
+            //Random Chance passed, we can now decide which event to run
+            var eventRandom = Game1.random.Next(1, 6);
+                
+            switch (eventRandom)
+            {
+                case 1:
                 {
                     Game1.player.mailForTomorrow.Add("bankStockTanked");
-                    if (Debugging)
+                    if (_bankData.MoneyInBank > _lostAmt)
+                        _bankData.MoneyInBank -= _lostAmt;
+                    if (_debugging)
                         Monitor.Log($"StockTanked Lost: {_lostAmt}G");
                     break;
                 }
-                case > 10:
+                case 2:
                 {
                     Game1.player.mailForTomorrow.Add("bankStockRose");
-                    if(Debugging)
+                    _bankData.MoneyInBank += _gainedAmt;
+                    if(_debugging)
                         Monitor.Log($"StockRose Gained: {_gainedAmt}G");
                     break;
                 }
-                case > 7:
+                case 3:
+                {
+                    Game1.player.mailForTomorrow.Add("bankAccountHacked");
+                    _bankData.MoneyInBank -= hackedAmt;
+                    if(_debugging)
+                        Monitor.Log($"AccountHacked Lost: {hackedAmt}");
+                    break;
+                }
+                case 4:
                 {
                     Game1.player.mailForTomorrow.Add("bankCustomerAppreciation");
-                    if(Debugging)
+                    _bankData.MoneyInBank += _giftAmt;
+                    if(_debugging)
                         Monitor.Log($"CustomerAppreciation Gained: {_giftAmt}G");
                     break;
                 }
-                case > 5:
+                case 5:
                 {
                     Game1.player.mailForTomorrow.Add("bankDebtPaid");
-                    if(Debugging)
+                    if (_bankData.LoanedMoney - _bankData.MoneyPaidBack > 0)
+                    {
+                        _bankData.LoanedMoney = 0;
+                        _bankData.MoneyPaidBack = 0;
+                        _bankData.TotalNumberOfLoans = 0;
+                    }
+                    if(_debugging)
                         Monitor.Log($"DebtPaid ForgivenAmt: {_bankData.LoanedMoney}G");
                     break;
                 }
                 default:
                 {
-                    if(Debugging)
+                    if(_debugging)
                         Monitor.Log($"(Rand: {rand}) Nothing was triggered in the event");
                     break;
                 }
             }
-                
-
-        }
-        
-
-        private int GetPercentage(int initialValue, int percentage)
-        {
-            return (initialValue * percentage) / 100;
-        }
-        
-        private int GetRandomAmt(int min, int max)
-        {
-            return Game1.random.Next(min, max);
         }
         
         
@@ -595,7 +630,7 @@ namespace BankOfFerngill
                         _bankData.NumberOfLoansPaidBack++;
                         _bankData.TotalNumberOfLoans--;
                     }
-                    var s = _bankData.LoanedMoney > 0 ? _i18N.Get("bank.payLoan.payTowards", new { amt = FormatNumber(amtLoanPay), loan_balance = _bankData.LoanedMoney - _bankData.MoneyPaidBack}) : _i18N.Get("bank.payLoan.paidOff");
+                    string s = _bankData.LoanedMoney > 0 ? _i18N.Get("bank.payLoan.payTowards", new { amt = FormatNumber(amtLoanPay), loan_balance = _bankData.LoanedMoney - _bankData.MoneyPaidBack}) : _i18N.Get("bank.payLoan.paidOff");
                     Game1.exitActiveMenu();
                     Game1.showGlobalMessage(s);
                 }
@@ -611,12 +646,29 @@ namespace BankOfFerngill
         #endregion
         
         
-        //Public methods
-        public static int CalculateInterest(int val, int interest)
+        //Private Methods
+        private int GetPercentage(int initialValue, int percentage)
+        {
+            return (initialValue * percentage) / 100;
+        }
+        
+        private int GetRandomAmt(int min, int max)
+        {
+            return Game1.random.Next(min, max);
+        }
+        
+        //Static Methods
+
+        private static int CalculatePercentage(int value, int total = 100)
+        {
+            return (value / total) * 100 > 0 ? (value / total) * 100 : 0;
+        }
+        private static int CalculateInterest(int val, int interest)
         {
             return (val * interest / 100);
         }
-        public static string FormatString(string val, int width)
+
+        private static string FormatString(string val, int width)
         {
             int maxWidth = width;//UiWidth - 10;
             string outer = "";
