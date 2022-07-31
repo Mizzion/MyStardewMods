@@ -1,0 +1,10 @@
+{
+  "Name": "Crop Reviver",
+  "Author": "Mizzion",
+  "Version": "0.0.1",
+  "Description": "Brings your dead plants back",
+  "UniqueID": "mizzion.cropreviver",
+  "EntryDll": "CropReviver.dll",
+  "MinimumApiVersion": "3.15.1",
+  "UpdateKeys": [ "Nexus:" ]
+}
