@@ -40,13 +40,13 @@ namespace BankOfFerngill.Framework.Menu.Pages
             _height = height;
             
             
-            _title = new ClickableComponent(new Rectangle(menuX + 600, menuY + 100, _width - 400, 128), _i18N.Get("bank.deposit.title"));
+            _title = new ClickableComponent(new Rectangle(menuX + _width / 2, menuY + 100, Game1.tileSize * 4, Game1.tileSize), _i18N.Get("bank.deposit.title"));
             
             _textBox = new TextBox(null, null, Game1.dialogueFont, Game1.textColor)
             {
-                X = menuX + (width - 512) / 2,
-                Y = _title.bounds.Y + (height - 200),
-                Width = 512,
+                X = menuX + (_width - 512) / 2,
+                Y = _title.bounds.Y + (_height - 200),
+                Width = 256,
                 Height = 192
             };
             Game1.keyboardDispatcher.Subscriber = _textBox;
@@ -58,10 +58,14 @@ namespace BankOfFerngill.Framework.Menu.Pages
             _okButtonCc =
                 new ClickableTextureComponent(
                     new Rectangle(_textBox.X + _textBox.Width + 32 + 4, _textBox.Y, 64, 64), Game1.mouseCursors, Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 46), 1f);
+            
+            _monitor.Log($"Ok Buttons bound are  X:{_okButtonCc.bounds.X}, Y:{_okButtonCc.bounds.Y}");
         }
 
         public override void draw(SpriteBatch b)
         {
+            //b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.75f);
+            //Game1.drawDialogueBox(menuX, menuY, _width, _height, false, true);
             Utility.drawTextWithShadow(b, _title.name, Game1.dialogueFont, new Vector2(_title.bounds.X, _title.bounds.Y), Color.Black);
             SpriteText.drawString(b, _i18N.Get("bank.deposit.description", new{player_name = Game1.player.Name, bank_balance = ModEntry.FormatNumber(_bankData.MoneyInBank)}), menuX + 45, _title.bounds.Y + 64, 999999, _width, 9999, 0.75f, 0.865f, junimoText: false);
             

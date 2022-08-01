@@ -301,7 +301,13 @@ namespace BankOfFerngill.Framework.Menu
             height = (_isAndroid ? 550 : 760) + borderWidth * 2;
             xPositionOnScreen = Game1.uiViewport.Width / 2 - (width - (int)(Game1.tileSize * 2.4f)) / 2;
             yPositionOnScreen = Game1.uiViewport.Height / 2 - height / 2;
+/*
+            xPositionOnScreen = (int)(Game1.viewport.Width * Game1.options.zoomLevel * (1 / Game1.options.uiScale)) / 2 - 
+                                     (width / 2);
 
+            yPositionOnScreen = (int)(Game1.viewport.Height * Game1.options.zoomLevel * (1 / Game1.options.uiScale)) / 2 -
+                                     (height / 2);*/
+            
             // show close button on Android
             if (_isAndroid)
                 initializeUpperRightCloseButton();

@@ -20,8 +20,7 @@ namespace BankOfFerngill.Framework.Menu.Pages
         
         
         //Page stuff
-        private readonly ClickableComponent _title;
-        
+         
         public BankInfoPage(int x, int y, int width, int height, IMonitor monitor, ITranslationHelper i18n, BankData bankData) : base(x, y, width, height)
         {
             menuX = x;
@@ -34,7 +33,7 @@ namespace BankOfFerngill.Framework.Menu.Pages
         public override void draw(SpriteBatch b)
         {
              var total = _bankData.LoanedMoney - _bankData.MoneyPaidBack;
-            var y = 64;
+            //var y = 64;
             
             //i18n.Get("npc_dialogue"+outty, new { player_name = Game1.player.Name });
             //SpriteText.drawStringHorizontallyCenteredAt(b, _titleLabel, XPos + 600, YPos + 120);

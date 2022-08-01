@@ -56,7 +56,11 @@
       <change beforePath="$PROJECT_DIR$/BankOfFerngill/Framework/Menu/BankTabbedMenu.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BankOfFerngill/Framework/Menu/BankTabbedMenu.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BankOfFerngill/Framework/Menu/Pages/BankInfoPage.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BankOfFerngill/Framework/Menu/Pages/BankInfoPage.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BankOfFerngill/Framework/Menu/Pages/DepositPage.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BankOfFerngill/Framework/Menu/Pages/DepositPage.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BankOfFerngill/ModEntry.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BankOfFerngill/ModEntry.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EnhancedRelationships/EnhancedRelationships/EnhancedRelationships.cs" beforeDir="false" afterPath="$PROJECT_DIR$/EnhancedRelationships/EnhancedRelationships/EnhancedRelationships.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EnhancedRelationships/EnhancedRelationships/ModConfig.cs" beforeDir="false" afterPath="$PROJECT_DIR$/EnhancedRelationships/EnhancedRelationships/ModConfig.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EnhancedRelationships/EnhancedRelationships/Properties/AssemblyInfo.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/EnhancedRelationships/EnhancedRelationships/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/EnhancedRelationships/EnhancedRelationships/manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EnhancedRelationships/EnhancedRelationships/packages.config" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -977,7 +981,8 @@
       <workItem from="1659139150347" duration="10127000" />
       <workItem from="1659227779672" duration="470000" />
       <workItem from="1659261159023" duration="6186000" />
-      <workItem from="1659306122610" duration="8598000" />
+      <workItem from="1659306122610" duration="12412000" />
+      <workItem from="1659346593062" duration="12133000" />
     </task>
     <servers />
   </component>
