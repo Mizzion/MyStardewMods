@@ -314,7 +314,7 @@ namespace BankOfFerngill
 
             if (e.IsDown(SButton.NumPad3) && _debugging)
             {
-                Game1.activeClickableMenu = new BankTabbedMenu(MenuTab.BankInfo, Monitor, _i18N, false);
+                Game1.activeClickableMenu = new BankTabbedMenu(MenuTab.BankInfo, Monitor, _i18N, _bankData, false);
             }
             if(e.IsDown(SButton.Escape) && Game1.activeClickableMenu is BankMenu or BankInfoMenu)
             {

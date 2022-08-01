@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using BankOfFerngill.Framework.Data;
 using BankOfFerngill.Framework.Menu.Pages;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -24,6 +25,8 @@ namespace BankOfFerngill.Framework.Menu
         private readonly IMonitor _monitor;
 
         private readonly ITranslationHelper _i18N;
+
+        private BankData _bankData;
 
         private ClickableTextureComponent _upArrow;
         private ClickableTextureComponent _downArrow;
@@ -56,11 +59,12 @@ namespace BankOfFerngill.Framework.Menu
         ** Public methods
         *********/
         
-        public BankTabbedMenu(MenuTab initialTab, IMonitor monitor, ITranslationHelper i18N, bool isNewMenu)
+        public BankTabbedMenu(MenuTab initialTab, IMonitor monitor, ITranslationHelper i18N, BankData bankData, bool isNewMenu)
         {
             
             _monitor = monitor;
             _i18N = i18N;
+            _bankData = bankData;
             CurrentTab = initialTab;
             ResetComponents();
 
@@ -149,7 +153,7 @@ namespace BankOfFerngill.Framework.Menu
 
                 // open menu with new index
                 var tabId = GetTabId(_tabs[index]);
-                Game1.activeClickableMenu = new BankTabbedMenu(tabId, _monitor, _i18N, isNewMenu: false);
+                Game1.activeClickableMenu = new BankTabbedMenu(tabId, _monitor, _i18N, _bankData, isNewMenu: false);
             }
         }
 
@@ -217,7 +221,7 @@ namespace BankOfFerngill.Framework.Menu
                 if (tab.bounds.Contains(x, y))
                 {
                     var tabId = GetTabId(tab);
-                    Game1.activeClickableMenu = new BankTabbedMenu(tabId, _monitor, _i18N, isNewMenu: false);
+                    Game1.activeClickableMenu = new BankTabbedMenu(tabId, _monitor, _i18N, _bankData, isNewMenu: false);
                     break;
                 }
             }
@@ -324,14 +328,16 @@ namespace BankOfFerngill.Framework.Menu
                 
                 //add pages
                 _pages.Clear();
-                _pages.AddRange(new[]
+                _pages.Add(new BankInfoPage(xPositionOnScreen, yPositionOnScreen, 1200, 760, _monitor, _i18N, _bankData));
+                _pages.Add(new DepositPage(xPositionOnScreen, yPositionOnScreen, 1200, 760, _monitor, _i18N, _bankData));
+               /* _pages.AddRange(new[]
                 {
-                    new BankInfoPage(xPositionOnScreen, yPositionOnScreen, 1200, 760, 0),
-                    new BankInfoPage(xPositionOnScreen, yPositionOnScreen, 1200, 760, 1),
-                    new BankInfoPage(xPositionOnScreen, yPositionOnScreen, 1200, 760, 2),
-                    new BankInfoPage(xPositionOnScreen, yPositionOnScreen, 1200, 760, 3),
-                    new BankInfoPage(xPositionOnScreen, yPositionOnScreen, 1200, 760, 4),
-                });
+                    new BankInfoPage(xPositionOnScreen, yPositionOnScreen, 1200, 760, _monitor, _i18N, _bankData),
+                    new BankInfoPage(xPositionOnScreen, yPositionOnScreen, 1200, 760, _monitor, _i18N, _bankData),
+                    new BankInfoPage(xPositionOnScreen, yPositionOnScreen, 1200, 760, _monitor, _i18N, _bankData),
+                    new BankInfoPage(xPositionOnScreen, yPositionOnScreen, 1200, 760, _monitor, _i18N, _bankData),
+                    new BankInfoPage(xPositionOnScreen, yPositionOnScreen, 1200, 760, _monitor, _i18N, _bankData),
+                });*/
             }
 
             // add scroll UI

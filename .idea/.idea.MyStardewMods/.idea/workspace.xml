@@ -51,7 +51,13 @@
     <projectFile>CropReviver/CropReviver.csproj</projectFile>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67c047ae-a02a-4eda-b158-c149f3b99db7" name="Changes" comment="" />
+    <list default="true" id="67c047ae-a02a-4eda-b158-c149f3b99db7" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MyStardewMods/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MyStardewMods/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BankOfFerngill/Framework/Menu/BankTabbedMenu.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BankOfFerngill/Framework/Menu/BankTabbedMenu.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BankOfFerngill/Framework/Menu/Pages/BankInfoPage.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BankOfFerngill/Framework/Menu/Pages/BankInfoPage.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BankOfFerngill/Framework/Menu/Pages/DepositPage.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BankOfFerngill/Framework/Menu/Pages/DepositPage.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BankOfFerngill/ModEntry.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BankOfFerngill/ModEntry.cs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -971,6 +977,7 @@
       <workItem from="1659139150347" duration="10127000" />
       <workItem from="1659227779672" duration="470000" />
       <workItem from="1659261159023" duration="6186000" />
+      <workItem from="1659306122610" duration="8598000" />
     </task>
     <servers />
   </component>
@@ -979,6 +986,17 @@
   </component>
   <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
   <component name="UnityUnitTestConfiguration" currentTestLauncher="NUnit" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
   </component>
