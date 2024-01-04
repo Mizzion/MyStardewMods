@@ -366,7 +366,7 @@ namespace FarmHelper
                 }
             }
             
-            Game1.player.Stamina = Game1.player.MaxStamina;//So we dont passout lol
+            //Game1.player.Stamina = Game1.player.MaxStamina;//So we dont passout lol
         }
         private void UseTool(Vector2 startPos, Vector2 endPos, GameLocation loc)
         {
@@ -743,7 +743,7 @@ namespace FarmHelper
                                     SObject i = HarvestedCrop(dirt, crop, (int)pair.Key.X, (int)pair.Key.Y);
                                     var harvest = GiveItemToPlayer(i, who);
                                     if(_debugging)
-                                        Monitor.Log($"Passed Checks and on my way to harvesting, Harvest: {harvest.ToString()} Item: {i.Name}", LogLevel.Alert);
+                                        Monitor.Log($"Passed Checks and on my way to harvesting, Harvest: {harvest.ToString()} Item: {i.Name} Regrow After Harvest: {crop.regrowAfterHarvest.Value}, Current Phase Day: {crop.dayOfCurrentPhase.Value}, Current Phase: {crop.currentPhase.Value} of Max: {crop.phaseDays.Count - 1}", LogLevel.Alert);
                                     if (harvest)
                                     {
                                         int placeHolder = 0;

@@ -1,6 +1,0 @@
-C:\SDV_Modding\MyMods\MyStardewMods\ArtifactDigger\obj\Debug\ArtifactDigger.csproj.CoreCompileInputs.cache
-C:\SDV_Modding\MyMods\MyStardewMods\ArtifactDigger\bin\Debug\ArtifactDigger.dll
-C:\SDV_Modding\MyMods\MyStardewMods\ArtifactDigger\bin\Debug\ArtifactDigger.pdb
-C:\SDV_Modding\MyMods\MyStardewMods\ArtifactDigger\obj\Debug\ArtifactDigger.dll
-C:\SDV_Modding\MyMods\MyStardewMods\ArtifactDigger\obj\Debug\ArtifactDigger.pdb
-C:\SDV_Modding\MyMods\MyStardewMods\ArtifactDigger\obj\Debug\ArtifactDigger.csprojAssemblyReference.cache

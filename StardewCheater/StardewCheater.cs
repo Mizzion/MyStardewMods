@@ -224,7 +224,7 @@ namespace StardewCheater
         }
         private void OnRenderedHud(object sender, RenderedHudEventArgs e)
         {
-            DoTimes();
+            //DoTimes();
             
         }
 
