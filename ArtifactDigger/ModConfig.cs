@@ -20,7 +20,7 @@ namespace ArtifactDigger
 
         //Button to Scan for artifacts
         //public string ArtifactScanKey { get; set; } = "Z";
-        public KeybindList ArtifactScanKey = new KeybindList(SButton.Z);
+        public SButton ArtifactScanKey  { get; set;} = SButton.Z;
 
         //Whether or not the mod should shake trees.
         public bool ShakeTrees { get; set; } = false;

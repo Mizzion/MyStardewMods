@@ -15,9 +15,11 @@ using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
 using xTile.Dimensions;
+using MyStardewMods.Common;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 using SFarmer = StardewValley.Farmer;
 using SObject = StardewValley.Object;
+using GenericModConfigMenu;
 
 namespace FarmHelper
 {
@@ -63,8 +65,9 @@ namespace FarmHelper
         //The location of the Chest if AddItemsToInventory == False
         private Vector2 _chestLocation;
 
-        //ModConfig
+        //Configs 
         private ModConfig _config;
+        private IGenericModConfigMenuApi _cfgMenu;
 
         //Total Times Action Performed.
         private int _count;
@@ -89,10 +92,28 @@ namespace FarmHelper
             //Events
             helper.Events.GameLoop.DayStarted += OnDayStarted;
             helper.Events.Input.ButtonPressed += OnButtonPressed;
+            helper.Events.GameLoop.GameLaunched += OnGameLaunched;
 
         }
 
         //Event Methods
+
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        {
+            #region Generic Moc Config Menu
+            _cfgMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (_cfgMenu is null) return;
+
+            //Register mod
+            _cfgMenu.Register(
+                mod: ModManifest,
+                reset: () => _config = new ModConfig(),
+                save: () => Helper.WriteConfig(_config)
+                );
+
+            #endregion
+
+        }
 
         /// <summary>
         /// Event that runs when the day starts
@@ -129,7 +150,10 @@ namespace FarmHelper
                 
             //Check to see if Clear location key was pressed
             if (e.IsDown(_clearLocationKey))
-                ClearCurrentLocation(Game1.currentLocation);
+            {
+                //ClearCurrentLocation(Game1.currentLocation);
+            }
+
             if (e.IsDown(_useToolKey))
             {
                 ICursorPosition cur = Helper.Input.GetCursorPosition();
@@ -180,7 +204,13 @@ namespace FarmHelper
                 }
             }
             if(e.IsDown(SButton.NumPad9))
+            {
+                if (Game1.player.currentLocation.Name.Contains("Farm"))
+                    return;
+                ClearCurrentLocation(Game1.currentLocation);
                 ClearLocation(Game1.player.currentLocation);
+            }
+                
 
             
         }

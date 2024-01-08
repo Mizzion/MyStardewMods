@@ -323,10 +323,8 @@ namespace BankOfFerngill
                 Game1.exitActiveMenu();
             }
             if (e.IsDown(SButton.MouseRight) && 
-                (Game1.currentLocation.Name.Contains("Community") && ((_vaultCoords.Contains(Game1.currentCursorTile) && Game1.player.mailReceived.Contains("ccVault")) || 
-                                                                      (_config.EnableVaultRoomDeskActivation && _deskCords.Contains(Game1.currentCursorTile)))) || 
-                (Game1.currentLocation.Name.Contains("JojaMart") && (_jojaMartCoords.Contains(Game1.currentCursorTile)) && Game1.player.mailReceived.Contains("jojaVault")) || 
-                (_config.EnableVaultRoomDeskActivation && _jojaMartCoords.Contains(Game1.currentCursorTile)))
+                ((Game1.currentLocation.Name.Contains("Community") && ((_vaultCoords.Contains(Game1.currentCursorTile) && Game1.player.mailReceived.Contains("ccVault")) || (_config.EnableVaultRoomDeskActivation && _deskCords.Contains(Game1.currentCursorTile)))) || 
+                (Game1.currentLocation.Name.Contains("JojaMart") && ((_jojaMartCoords.Contains(Game1.currentCursorTile) && Game1.player.mailReceived.Contains("jojaVault")) || (_config.EnableVaultRoomDeskActivation && _jojaMartCoords.Contains(Game1.currentCursorTile))))))
             {
                 DoBanking();
             }

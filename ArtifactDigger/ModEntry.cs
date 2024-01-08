@@ -24,11 +24,11 @@ namespace ArtifactDigger
         private ModConfig _config;
         private IGenericModConfigMenuApi _cfgMenu;
         string[] keys;
-        private KeybindList _activateKey;
+        private SButton _activateKey;
         private static Texture2D _buildingPlacementTiles;
         private List<Vector2> _location, _digLocation;
 
-        private readonly bool _isDebugging = true;
+        private readonly bool _isDebugging = false;
 
         /// <summary>
         /// The void that is ran before any other.
@@ -37,7 +37,7 @@ namespace ArtifactDigger
         public override void Entry(IModHelper helper)
         {
             _config = helper.ReadConfig<ModConfig>();
-            _defaultMagneticRadius = 126;
+            _defaultMagneticRadius = 128;
 
             _location = new List<Vector2>();
             _digLocation = new List<Vector2>();
@@ -89,9 +89,7 @@ namespace ArtifactDigger
                 name: () => "Dig Radius",
                 tooltip: () => "How many tile out from the player should we dig. ",
                 getValue: () => _config.DigRadius,
-                setValue: value => _config.DigRadius = value,
-                min: 1,
-                max: 1000
+                setValue: value => _config.DigRadius = value
             );
 
             _cfgMenu.AddBoolOption(
@@ -126,7 +124,7 @@ namespace ArtifactDigger
                tooltip: () => "Whether or not we should shake bushes"
            );
 
-            _cfgMenu.AddKeybindList(
+            _cfgMenu.AddKeybind(
                 mod: ModManifest,
                 name: () => "Activation Key",
                 tooltip: () => "The keybind to activate the digger.",
@@ -163,7 +161,7 @@ namespace ArtifactDigger
         {
             Game1.player.MagneticRadius = _playerOriginalMagneticRadius;
             if (_isDebugging)
-                Monitor.Log($"Resetting the players Magnetic Radius from {Game1.player.MagneticRadius} to {_defaultMagneticRadius}. Their Original was : {_playerOriginalMagneticRadius}");
+                Monitor.Log($"Resetting the players Magnetic Radius from {Game1.player.MagneticRadius} to {_playerOriginalMagneticRadius}. Their Original was : {_playerOriginalMagneticRadius}");
         }
 
 
@@ -189,12 +187,12 @@ namespace ArtifactDigger
         private void OnSaveLoad(object sender, SaveLoadedEventArgs e)
         {
             //Check and make sure the keybind is valid
-            /*
-            if(!KeybindList.TryParse(_config.ArtifactScanKey, out _activateKey))
+            
+            if(!Enum.TryParse(_config.ArtifactScanKey.ToString(), out _activateKey))
             {
-                _activateKey = SButton.Z;
+                _config.ArtifactScanKey = SButton.Z;
                 Monitor.LogOnce("Activation Keybind wasnt valid. Reset it to Z");
-            }*/
+            }
 
 
             _playerOriginalMagneticRadius = Game1.player.MagneticRadius;
@@ -216,7 +214,7 @@ namespace ArtifactDigger
             if (!Context.IsWorldReady)
                 return;
 
-            if(_config.ArtifactScanKey.JustPressed() && !_config.AutoArtifactScan && str)
+            if(e.IsDown(_config.ArtifactScanKey) && !_config.AutoArtifactScan && str)
             {
                 DoScan();
 
@@ -231,6 +229,13 @@ namespace ArtifactDigger
                 _config = Helper.ReadConfig<ModConfig>();
                 
                 Monitor.Log($"Mod Config was reloaded: {_config.DigRadius}");
+            }
+            if (e.IsDown(SButton.F2))
+            {
+                Game1.player.MagneticRadius = _defaultMagneticRadius;
+                Monitor.Log($"Players Magnetic Radius was reset from Current: {_playerOriginalMagneticRadius} to New: {Game1.player.MagneticRadius}");
+                _playerOriginalMagneticRadius = Game1.player.MagneticRadius;
+                
             }
         }
 
