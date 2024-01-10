@@ -20,6 +20,7 @@ using Rectangle = Microsoft.Xna.Framework.Rectangle;
 using SFarmer = StardewValley.Farmer;
 using SObject = StardewValley.Object;
 using GenericModConfigMenu;
+using System.Globalization;
 
 namespace FarmHelper
 {
@@ -111,6 +112,109 @@ namespace FarmHelper
                 save: () => Helper.WriteConfig(_config)
                 );
 
+            _cfgMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: () => "Farm Helper Settings",
+                tooltip: null);
+            
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: ()=> _config.ModEnabled,
+                setValue: value => _config.ModEnabled = value,
+                name: () => "Enable Farm Helper",
+                tooltip: () => "Enable or Disable FarmHelper");
+
+            _cfgMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: () => "Basic Configurations",
+                tooltip: null);
+
+            #region "Basic Configuration"
+
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => _config.AutomaticMode,
+                setValue: value => _config.AutomaticMode = value,
+                name: () => "Automate Helper (Coming Soon)",
+                tooltip: () => "Whether or not the mod should automate helping.");
+
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => _config.EnablePetting,
+                setValue: value => _config.EnablePetting = value,
+                name: () => "Automate Petting",
+                tooltip: () => "Pets your pet and animals automatically.");
+
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => _config.HarvestAnimalProducts,
+                setValue: value => _config.HarvestAnimalProducts = value,
+                name: () => "Harvest Animal Products",
+                tooltip: () => "Automatically harvest animal products");
+
+            #endregion
+
+            _cfgMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: () => "Key Binds",
+                tooltip: null);
+
+            #region "Key Binds"
+
+
+            _cfgMenu.AddKeybind(
+                mod: ModManifest,
+                name: () => "Harvest Crop Key",
+                tooltip: () => "The key to activate harvesting crops.",
+                getValue: () => _config.ActivationKey,
+                setValue: value => _config.ActivationKey = value
+            );
+
+            _cfgMenu.AddKeybind(
+                mod: ModManifest,
+                name: () => "UseTool Key",
+                tooltip: () => "The key to Activate using tools. Spreads out an area from the player.",
+                getValue: () => _config.UseToolKey,
+                setValue: value => _config.UseToolKey = value
+            );
+
+            _cfgMenu.AddKeybind(
+                mod: ModManifest,
+                name: () => "Clear Location Key",
+                tooltip: () => "The key to clear the current location.",
+                getValue: () => _config.ClearLocationKey,
+                setValue: value => _config.ClearLocationKey = value
+            );
+
+            _cfgMenu.AddKeybind(
+                mod: ModManifest,
+                name: () => "Gather Forage Key",
+                tooltip: () => "The key to gather forage from your current location.",
+                getValue: () => _config.GatherForageKey,
+                setValue: value => _config.GatherForageKey = value
+            );
+
+            _cfgMenu.AddKeybind(
+                mod: ModManifest,
+                name: () => "Use Single Tool Key",
+                tooltip: () => "The key to use a tool on the current tile under the mouse pointer.",
+                getValue: () => _config.SingleUseKey,
+                setValue: value => _config.SingleUseKey = value
+            );
+            #endregion
+
+
+            /* 
+               
+              
+               public bool EnableNotification { get; set; } = true;
+               public bool EnableCost { get; set; } = true;
+               public int HelperCost { get; set; } = 50;
+               public bool AddItemsToInventory { get; set; } = true;
+               
+               public Vector2 ChestLocation { get; set; } = new Vector2(68, 12);
+             */
+
             #endregion
 
         }
@@ -141,7 +245,7 @@ namespace FarmHelper
                 return;
 
             //Check to see if Action Key was pressed
-            if(e.IsDown(_activationKey))
+            if(e.IsDown(_config.ActivationKey))
             {
                 //ProcessLiveStock();
                 HarvestCrops();
@@ -149,18 +253,18 @@ namespace FarmHelper
             }
                 
             //Check to see if Clear location key was pressed
-            if (e.IsDown(_clearLocationKey))
+            if (e.IsDown(_config.ClearLocationKey))
             {
                 //ClearCurrentLocation(Game1.currentLocation);
             }
 
-            if (e.IsDown(_useToolKey))
+            if (e.IsDown(_config.UseToolKey))
             {
                 ICursorPosition cur = Helper.Input.GetCursorPosition();
                 UseTool(Game1.player.getTileLocation(), cur.Tile, Game1.currentLocation);
             }
 
-            if (e.IsDown(_forageKey))
+            if (e.IsDown(_config.GatherForageKey))
             {
                 DoForageHarvest();
                 //Lets try to get the spawns
@@ -177,7 +281,7 @@ namespace FarmHelper
                     }
                 }
             }
-            if (e.IsDown(_singleKey))
+            if (e.IsDown(_config.SingleUseKey))
             {
                 ICursorPosition cur = Helper.Input.GetCursorPosition();
                 SingleToolUse(cur.Tile, Game1.currentLocation);
@@ -223,6 +327,7 @@ namespace FarmHelper
         /// </summary>
         private void InitiliseConfig()
         {
+            /*
             if(!Enum.TryParse(_config.ActivationKey, true, out _activationKey))
             {
                 _activationKey = SButton.Q;
@@ -247,7 +352,7 @@ namespace FarmHelper
             {
                 _singleKey = SButton.V;
                 Monitor.Log("There was an error parsing the SingleUseKey. It was reset to V");
-            }
+            }*/
             _modEnabled = _config.ModEnabled;
             _automaticMode = _config.AutomaticMode;
             _enablePetting = _config.EnablePetting;
@@ -516,6 +621,46 @@ namespace FarmHelper
                 }
             }
         }
+
+        private void GetObjects(GameLocation loc)
+        {
+            string foundObjects = "Found Objects: ";
+            string foundTerrain = "Found Terrain: ";
+            string terrain = "";
+            string forage = "";
+            string foundForage = "Found Forage: ";
+            int objNum = 0, terNum = 0, forNum = 0;
+            //Objects.
+            foreach (var obj in loc.objects.Pairs.ToList())
+            {
+                foundObjects += $" {obj.Value.Name} X:{obj.Key.X.ToString(CultureInfo.InvariantCulture)} Y: {obj.Key.Y.ToString(CultureInfo.InvariantCulture)}in Map: {loc.Name}.";
+                objNum++;
+            }
+
+
+            //TerrainFeatures
+            foreach (var ter in loc.terrainFeatures.Pairs.ToList())
+            {
+                if (ter.Value is Grass)
+                    terrain = "Grass";
+                if (ter.Value is Tree tree)
+                    terrain = "Tree(More Coming Soon)";
+                foundTerrain += $" {terrain} X:{ter.Key.X.ToString(CultureInfo.InvariantCulture)} Y: {ter.Key.Y.ToString(CultureInfo.InvariantCulture)}in Map: {loc.Name}.";
+                terNum++;
+            }
+
+            //Resource Clumps
+            /*
+            foreach (var fora in loc.)
+            {
+                
+            }*/
+
+            //Spit out the totals.
+            Monitor.Log($"Objects ({objNum}): {foundObjects}");
+            Monitor.Log($"Terrain Feature {terNum} {foundTerrain}");
+        }
+
         /// <summary>
         /// Checks and pets the players Dog/Cat
         /// </summary>
@@ -784,7 +929,17 @@ namespace FarmHelper
                                         else
                                         {
                                             if (crop.regrowAfterHarvest.Value != -1)
+                                            {
                                                 crop.dayOfCurrentPhase.Value = crop.regrowAfterHarvest.Value;
+                                                crop.fullyGrown.Value = true;
+                                                if (_debugging)
+                                                {
+                                                    Monitor.Log($"Passed the regrowAfterHarvest check. ", LogLevel.Warn);
+                                                    Monitor.Log($"Passed Checks and on my way to harvesting, Harvest: {harvest.ToString()} Item: {i.Name} Regrow After Harvest: {crop.regrowAfterHarvest.Value}, Current Phase Day: {crop.dayOfCurrentPhase.Value}, Current Phase: {crop.currentPhase.Value} of Max: {crop.phaseDays.Count - 1}", LogLevel.Error);
+                                                }
+
+                                                
+                                            }                                                
                                             else
                                                 dirt.destroyCrop(pair.Key, false, loc);
                                             if (crop.dead.Value)
@@ -803,6 +958,8 @@ namespace FarmHelper
                 }
             }
         }
+       
+        
         /// <summary>
         /// Gets the Harvested Crop
         /// </summary>
