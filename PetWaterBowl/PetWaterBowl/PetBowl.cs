@@ -42,7 +42,7 @@ namespace PetWaterBowl
         {
             if (!EnableMod)
                 return;
-            Farm farm = Game1.getFarm();
+            var farm = Game1.getFarm();
             if (Game1.isRaining || Game1.isLightning || (Game1.isSnowing && EnableSnowWatering))
             {
                 farm.setMapTileIndex(54, 7, 1939, "Buildings", 0);
@@ -54,7 +54,7 @@ namespace PetWaterBowl
         {
             if (!EnableMod)
                 return;
-            Farm farm = Game1.getFarm();
+            var farm = Game1.getFarm();
             if (Game1.isRaining || Game1.isLightning || (Game1.isSnowing && EnableSnowWatering))
             {
                 farm.setMapTileIndex(54, 7, 1939, "Buildings", 0);

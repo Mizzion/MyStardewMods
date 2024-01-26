@@ -32,7 +32,7 @@ namespace PetWaterBowl
         private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
             //Vector2 preScan = CheckBowlLocation();
-            Farm farm = Game1.getFarm();
+            var farm = Game1.getFarm();
             //farm.setMapTileIndex(Convert.ToInt32(preScan.X), Convert.ToInt32(preScan.Y), 1938, "Buildings");
             WaterPetBowl(new Vector2(farm.petBowlPosition.X, farm.petBowlPosition.Y));
         }
@@ -45,7 +45,7 @@ namespace PetWaterBowl
         {
             if (!_enableMod)
                 return;
-            Farm farm = Game1.getFarm();
+            var farm = Game1.getFarm();
             if (Game1.isRaining || Game1.isLightning || (Game1.isSnowing && _enableSnowWatering) ||
                 (CheckForSprinklers(tileLocation) && _enableSprinklers))
             {
@@ -66,17 +66,17 @@ namespace PetWaterBowl
         /// <returns>True/False depending on if it found the sprinkler</returns>
         private bool CheckForSprinklers(Vector2 tileLocation)
         {
-            bool sprinklerFound = false;
-            Farm farm = Game1.getFarm();
-            foreach (KeyValuePair<Vector2, SObject> farmObjects in farm.objects.Pairs)
+            var sprinklerFound = false;
+            var farm = Game1.getFarm();
+            foreach (var farmObjects in farm.objects.Pairs)
             {
                 if (_config.EnableSprinklerWatering && farmObjects.Value.ParentSheetIndex == 645)
                 {
-                    for (int x = (int)tileLocation.X - 2; x <= tileLocation.X + 2; x++)
+                    for (var x = (int)tileLocation.X - 2; x <= tileLocation.X + 2; x++)
                     {
-                        for (int y = (int) tileLocation.Y - 2; y <= tileLocation.Y + 2; y++)
+                        for (var y = (int) tileLocation.Y - 2; y <= tileLocation.Y + 2; y++)
                         {
-                            Vector2 newLoc = new Vector2(x, y);
+                            var newLoc = new Vector2(x, y);
                             if (farm.getTileIndexAt(Convert.ToInt32(newLoc.X), Convert.ToInt32(newLoc.Y),
                                     "Buildings") == 1938)
                                 sprinklerFound = true;
@@ -93,10 +93,10 @@ namespace PetWaterBowl
         /// <returns>Returns a Vector2 of where it found the waterbowl.</returns>
         private Vector2 CheckBowlLocation()
         {
-            Farm farm = Game1.getFarm();
-            for (int xTile = 0; xTile < farm.Map.Layers[0].LayerWidth; ++xTile)
+            var farm = Game1.getFarm();
+            for (var xTile = 0; xTile < farm.Map.Layers[0].LayerWidth; ++xTile)
             {
-                for (int yTile = 0; yTile < farm.Map.Layers[0].LayerHeight; ++yTile)
+                for (var yTile = 0; yTile < farm.Map.Layers[0].LayerHeight; ++yTile)
                 {
                     if (farm.getTileIndexAt(xTile, yTile, "Buildings") == 1938)
                     {

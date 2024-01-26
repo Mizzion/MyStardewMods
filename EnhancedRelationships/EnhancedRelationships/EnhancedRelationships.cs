@@ -1,153 +1,146 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using SFarmer = StardewValley.Farmer;
+using Object = StardewValley.Object;
 
 namespace EnhancedRelationships
 {
     internal class EnhancedRelationships : Mod//, IAssetEditor
     {
-        private ModConfig Config;        
-        private List<NPC> BirthdayMessageQueue = new List<NPC>();
-        private IDictionary<string, int> GaveNpcGift = new Dictionary<string, int>();
-        private IDictionary<string, string> NpcGifts = new Dictionary<string, string>();
-        private bool debugging = true;
+        private ModConfig _config;        
+        private readonly List<NPC> _birthdayMessageQueue = new();
+        private readonly IDictionary<string, int> _gaveNpcGift = new Dictionary<string, int>();
+        private IDictionary<string, string> _npcGifts = new Dictionary<string, string>();
+        private const bool Debugging = true;
 
         public override void Entry(IModHelper helper)
         {
-            this.Config = Helper.ReadConfig<ModConfig>();            
-            SFarmer Player = Game1.player;
-            Helper.Events.GameLoop.DayStarted += this.TimeEvents_AfterDayStarted;
+            _config = Helper.ReadConfig<ModConfig>();            
+           
+            Helper.Events.GameLoop.DayStarted += TimeEvents_AfterDayStarted;
             Helper.Events.GameLoop.Saving += SaveEvents_BeforeSave;
             Helper.Events.Player.InventoryChanged += DoNpcGift;
 
-            //Lets add in the new content events
-            Helper.Events.Content.AssetRequested += this.ContentEvents_AssetRequested;
+            //Let's add in the new content events
+            Helper.Events.Content.AssetRequested += ContentEvents_AssetRequested;
         }
 
         private void DoNpcGift(object sender, InventoryChangedEventArgs e)
         {
-            SFarmer Player = Game1.player;
-            var day = SDate.Now();
-            foreach(GameLocation location in Game1.locations)
+            var player = Game1.player;
+            
+            foreach(var location in Game1.locations)
             {
-                foreach(NPC npc in location.characters)
+                foreach(var npc in location.characters)
                 {
-                    if (!GaveNpcGift.ContainsKey(npc.Name))
+                    if (!_gaveNpcGift.ContainsKey(npc.Name))
                     {
-                        if (Player.friendshipData.ContainsKey(npc.Name))
+                        if (player.friendshipData.ContainsKey(npc.Name))
                         {
-                            GaveNpcGift.Add(npc.Name, Player.friendshipData[npc.Name].GiftsToday);
+                            _gaveNpcGift.Add(npc.Name, player.friendshipData[npc.Name].GiftsToday);
                         }                        
                     }
                     else
                     {
-                        if (npc.isBirthday(day.Season, day.Day))
+                        if (npc.isBirthday())
                         {
-                            GaveNpcGift[npc.Name] = Player.friendshipData[npc.Name].GiftsToday;
+                            _gaveNpcGift[npc.Name] = player.friendshipData[npc.Name].GiftsToday;
                         }
                     }                    
                 }
             }
-            /*
-            foreach(KeyValuePair<string, int> pair in GaveNpcGift)
-            {
-                this.Monitor.Log($"Npc: {pair.Key} Gift Today: {pair.Value}");
-            }*/
         }
+
+
         private void TimeEvents_AfterDayStarted(object sender, EventArgs e)
         {
             try
             {
                 //Birthday tests was in AfterDay Started
-                this.BirthdayMessageQueue.Clear();
+                _birthdayMessageQueue.Clear();
                 var today = SDate.Now();
                 if (today.DaysSinceStart != 1)
                 {
                     var yesterday = SDate.Now().AddDays(-1);
-                    foreach (GameLocation location in Game1.locations)
+                    foreach (var location in Game1.locations)
                     {
-                        foreach (NPC characterz in location.characters)
-                            DoLogic(characterz, yesterday.Day, yesterday.Season);
+                        foreach (var character in location.characters)
+                            DoLogic(character, yesterday.Day, yesterday.Season.ToString());
                     }
 
-                    foreach (NPC birthdayMessage in this.BirthdayMessageQueue)
-                        birthdayMessage.CurrentDialogue.Push(new Dialogue(PickRandomDialogue(), birthdayMessage));
+                    foreach (var birthdayMessage in _birthdayMessageQueue)
+                        birthdayMessage.CurrentDialogue.Push(new Dialogue(birthdayMessage, PickRandomDialogue()));
                 }
             }
             catch (Exception ex)
             {
-                this.Monitor.Log(ex.ToString());
+                Monitor.Log(ex.ToString());
             }
            
         }
         private void SaveEvents_BeforeSave(object sender, EventArgs e)
         {
-            if (!this.Config.GetMail)
+            if (!_config.GetMail)
                 return;
             try
             {
                 var tomorrow = SDate.Now().AddDays(1);
-                foreach (GameLocation location in Game1.locations)
+                foreach (var location in Game1.locations)
                 {
-                    foreach (NPC npc in location.characters)
+                    foreach (var npc in location.characters.Where(npc => npc.Birthday_Season == tomorrow.SeasonKey && npc.Birthday_Day == tomorrow.Day))
                     {
-                        if (npc.isBirthday(tomorrow.Season, tomorrow.Day))
-                        {
-                            Game1.mailbox.Add($"birthDayMail{npc.Name}");
-                        }
+                        Game1.mailbox.Add($"birthDayMail{npc.Name}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                this.Monitor.Log(ex.ToString());
+                Monitor.Log(ex.ToString());
             }
                       
         }
         private void DoLogic(NPC npc, int day, string season)
         {
-            SFarmer Player = Game1.player;
-            bool GiftGiven = false;
-            if (!Player.friendshipData.ContainsKey(npc.Name) || Player.friendshipData[npc.Name].Points <= 0)
+            var player = Game1.player;
+            var giftGiven = false;
+            if (!player.friendshipData.ContainsKey(npc.Name) || player.friendshipData[npc.Name].Points <= 0)
                 return;
-            int index = Player.getFriendshipHeartLevelForNPC(npc.Name);
-            int basicAmount = this.Config.BasicAmount;
+            var index = player.getFriendshipHeartLevelForNPC(npc.Name);
+            var basicAmount = _config.BasicAmount;
             index = index > 10 ? 10 : index;
             //Check to see if gift was given
-            int giftInt;
-            if (GaveNpcGift.ContainsKey(npc.Name))
+            if (_gaveNpcGift.TryGetValue(npc.Name, out var giftInt))
             {
-                giftInt = GaveNpcGift[npc.Name];
-                GiftGiven = giftInt == 1 ? true : false;
+                giftGiven = giftInt == 1;
             }
             //End check
-            if (this.Config.EnableMissedBirthdays && npc.isBirthday(season, day) && GiftGiven == false)
+            if (_config.EnableMissedBirthdays && npc.Birthday_Season == season && npc.Birthday_Day == day && giftGiven == false)
             {
-                int amount = !this.Config.EnableRounded ? (int)Math.Floor((double)basicAmount * (double)this.Config.BirthdayMultiplier * (double)this.Config.BirthdayHeartMultiplier[index] + (double)basicAmount * (double)this.Config.HeartMultiplier[index]) : (int)Math.Ceiling((double)basicAmount * (double)this.Config.BirthdayMultiplier * (double)this.Config.BirthdayHeartMultiplier[index] + (double)basicAmount * (double)this.Config.HeartMultiplier[index]);
+                var amount = !_config.EnableRounded ? (int)Math.Floor(basicAmount * (double)_config.BirthdayMultiplier * _config.BirthdayHeartMultiplier[index] + basicAmount * (double)_config.HeartMultiplier[index]) : (int)Math.Ceiling(basicAmount * (double)_config.BirthdayMultiplier * _config.BirthdayHeartMultiplier[index] + basicAmount * (double)_config.HeartMultiplier[index]);
                 amount *= -1;
                 Game1.player.changeFriendship(amount, npc);
-                this.BirthdayMessageQueue.Add(npc);
-                if (debugging)
+                _birthdayMessageQueue.Add(npc);
+                if (Debugging)
                 {
-                    this.Monitor.Log($"Message should have been added for {npc.Name}");
+                    Monitor.Log($"Message should have been added for {npc.Name}");
                 }
 
-                GaveNpcGift.Remove(npc.Name);
-                this.Monitor.Log($"Decreased Friendship {amount} With : {npc.Name}");
+                _gaveNpcGift.Remove(npc.Name);
+                Monitor.Log($"Decreased Friendship {amount} With : {npc.Name}");
             }
             else
             {
-                if (Player.friendshipData[npc.Name].GiftsThisWeek >= this.Config.AmtOfGiftsToKeepNpcHappy)
+                if (player.friendshipData[npc.Name].GiftsThisWeek >= _config.AmtOfGiftsToKeepNpcHappy)
                     return;
-                int amount = !this.Config.EnableRounded ? (int)Math.Floor((double)basicAmount * (double)this.Config.HeartMultiplier[index]) : (int)Math.Ceiling((double)basicAmount * (double)this.Config.HeartMultiplier[index]);
-                Player.changeFriendship(amount, npc);
-                if (debugging)
+                var amount = !_config.EnableRounded ? (int)Math.Floor(basicAmount * (double)_config.HeartMultiplier[index]) : (int)Math.Ceiling(basicAmount * (double)_config.HeartMultiplier[index]);
+                player.changeFriendship(amount, npc);
+                if (Debugging)
                 {
-                    this.Monitor.Log($"Increased Friendship {amount} With : {npc.Name}");
+                    Monitor.Log($"Increased Friendship {amount} With : {npc.Name}");
                 }
                 
             }
@@ -159,13 +152,13 @@ namespace EnhancedRelationships
             {
                 e.Edit(asset =>
                 {
-                    NpcGifts = GetNpcGifts();
-                    var i18n = Helper.Translation;
-                    foreach (var d in NpcGifts)
+                    _npcGifts = GetNpcGifts();
+                    var i18N = Helper.Translation;
+                    foreach (var d in _npcGifts)
                     {
-                        IDictionary<string, string> npc = asset.AsDictionary<string, string>().Data;
+                        var npc = asset.AsDictionary<string, string>().Data;
                         npc["birthDayMail" + d.Key] =
-                            i18n.Get("npc_mail", new { npc_name = d.Key, npc_gift = d.Value });
+                            i18N.Get("npc_mail", new { npc_name = d.Key, npc_gift = d.Value });
                     }
                 });
             }
@@ -173,33 +166,35 @@ namespace EnhancedRelationships
         
         private string PickRandomDialogue()
         {
-            var i18n = Helper.Translation;
-            Random rnd = new Random();
-            int outty = rnd.Next(0, 7);
+            var i18N = Helper.Translation;
+            var rnd = new Random();
+            var outer = rnd.Next(0, 7);
             //Return the translated Text    
-            return i18n.Get("npc_dialogue"+outty, new { player_name = Game1.player.Name });           
+            return i18N.Get("npc_dialogue"+outer, new { player_name = Game1.player.Name });           
         }
         //Mail Updates
         
         //Grab NPC Gifts Loves
         private IDictionary<string, string> GetNpcGifts(bool loved = true)
         {
-            var outter = Game1.NPCGiftTastes;
-            IDictionary<string, string> results = new Dictionary<string, string>();
-            string giftNames = "";
-            foreach (var o in outter)
+            if (loved)
             {
-                if (o.Value.Contains('/'))
-                {
-                   foreach (var n in o.Value.Split('/')[1].Split(' '))
-                   {
-                       StardewValley.Object obj = new StardewValley.Object(Convert.ToInt32(n), 1, false, -1, 0);
-                       if(obj.DisplayName != "Error Item")
-                           giftNames += $"{obj.DisplayName}, ";
-                   }
-                   results.Add(o.Key, giftNames.Substring(0, giftNames.Length - 2));
-                   giftNames = "";
-                }
+                if(Debugging)
+                    Monitor.Log("Loved was true");
+            }
+
+
+            var outer = Game1.NPCGiftTastes;
+            IDictionary<string, string> results = new Dictionary<string, string>();
+            var giftNames = "";
+
+            foreach (var o in outer)
+            {
+                if (!o.Value.Contains('/')) continue;
+                giftNames = (from n in o.Value.Split('/')[1].Split(' ') where n.Length > 0 select new Object(n, 1) into obj where obj.DisplayName != "Error Item" select obj).Aggregate(giftNames, (current, obj) => current + $"{obj.DisplayName}, ");
+                if (giftNames.Contains(", "))
+                    results.Add(o.Key, giftNames.Substring(0, giftNames.Length - 2));
+                giftNames = "";
             }
             return results;
         }

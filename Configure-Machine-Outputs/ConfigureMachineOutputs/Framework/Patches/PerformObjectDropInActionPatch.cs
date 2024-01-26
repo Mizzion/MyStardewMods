@@ -73,9 +73,9 @@ namespace ConfigureMachineOutputs.Framework.Patches
             {
                 return new SObject(334, 2);
             }
-            string[] ingredients = CraftingRecipe.craftingRecipes[item.Name].Split('/')[0].Split(' ');
-            List<SObject> ingredient_objects = new List<SObject>();
-            for (int i = 0; i < ingredients.Count(); i += 2)
+            var ingredients = CraftingRecipe.craftingRecipes[item.Name].Split('/')[0].Split(' ');
+            var ingredient_objects = new List<SObject>();
+            for (var i = 0; i < ingredients.Count(); i += 2)
             {
                 ingredient_objects.Add(new SObject(Convert.ToInt32(ingredients[i]), Convert.ToInt32(ingredients[i + 1])));
             }
@@ -97,9 +97,9 @@ namespace ConfigureMachineOutputs.Framework.Patches
         {
             if (!(dropInItem is SObject))
                 return false;
-            SObject inputItem = (SObject) dropInItem;
-            SObject machine = __instance;
-            Multiplayer mp = new Multiplayer();
+            var inputItem = (SObject) dropInItem;
+            var machine = __instance;
+            var mp = new Multiplayer();
             //Check the machine for held items
             if (machine.heldObject.Value != null && !machine.Name.Equals("Recycling Machine") &&
                 !machine.Name.Equals("Crystalarium") || inputItem != null && inputItem.bigCraftable.Value)
@@ -173,11 +173,11 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 _minOut = _config.Machines.Deconstructor.CustomDeconstructorEnabled ? _config.Machines.Deconstructor.DeconstructorMinOutput : 1;
                 _maxOut = _config.Machines.Deconstructor.CustomDeconstructorEnabled ? _config.Machines.Deconstructor.DeconstructorMaxOutput : 1;
                 _rnd = new Random();
-                int totalInput = _config.Machines.Deconstructor.CustomDeconstructorEnabled ? _input * 1 : 1;
+                var totalInput = _config.Machines.Deconstructor.CustomDeconstructorEnabled ? _input * 1 : 1;
                 _output = _rnd.Next(_minOut, _maxOut) * _input;
 
 
-                SObject decon = GetDeconstructorOutput(inputItem);
+                var decon = GetDeconstructorOutput(inputItem);
                 if (decon != null)
                 {
                     machine.heldObject.Value = new SObject(inputItem.ParentSheetIndex, 1);
@@ -226,7 +226,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 _minOut = _config.Machines.GeodeCrusher.CustomGeodeCrusherEnabled ? _config.Machines.GeodeCrusher.GeodeCrusherMinOutput : 1;
                 _maxOut = _config.Machines.GeodeCrusher.CustomGeodeCrusherEnabled ? _config.Machines.GeodeCrusher.GeodeCrusherMaxOutput : 1;
                 _rnd = new Random();
-                int totalInput = _config.Machines.GeodeCrusher.CustomGeodeCrusherEnabled ? _input * 1 : 1;
+                var totalInput = _config.Machines.GeodeCrusher.CustomGeodeCrusherEnabled ? _input * 1 : 1;
                 _output = _rnd.Next(_minOut, _maxOut) * _input;
 
                 if (who.IsLocalPlayer && who.getTallyOfObject(382, false) <= 0)
@@ -238,7 +238,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                     return false;
                 }
                 //All passed now we process
-                SObject geode_item = (SObject)Utility.getTreasureFromGeode(inputItem);
+                var geode_item = (SObject)Utility.getTreasureFromGeode(inputItem);
                 if (machine.heldObject.Value == null)
                 {
                     if (!Utility.IsGeode(inputItem, disallow_special_geodes: true) || geode_item == null)
@@ -276,15 +276,15 @@ namespace ConfigureMachineOutputs.Framework.Patches
             }
             else if (machine.Name.Equals("Bone Mill"))
             {
-                int numItemsToTake = 0;
-                int[] itemsToTakeNum = new[] {579, 580, 581, 582, 583, 584, 585, 586, 587, 588, 589, 820, 821, 822, 823, 824, 825, 826, 827, 828};
+                var numItemsToTake = 0;
+                var itemsToTakeNum = new[] {579, 580, 581, 582, 583, 584, 585, 586, 587, 588, 589, 820, 821, 822, 823, 824, 825, 826, 827, 828};
 
                 //Grab Config settings
                 _input = 1;//_config.Machines.BoneMill.CustomBoneMillEnabled ? _config.Machines.BoneMill.BoneMillInputMultiplier : 1;
                 _minOut = _config.Machines.BoneMill.CustomBoneMillEnabled ? _config.Machines.BoneMill.BoneMillMinOutput : 1;
                 _maxOut = _config.Machines.BoneMill.CustomBoneMillEnabled ? _config.Machines.BoneMill.BoneMillMaxOutput : 1;
                 _rnd = new Random();
-                int totalInput = _config.Machines.BoneMill.CustomBoneMillEnabled ? _input * 1 : 1;
+                var totalInput = _config.Machines.BoneMill.CustomBoneMillEnabled ? _input * 1 : 1;
                 _output = _rnd.Next(_minOut, _maxOut) * _input;
 
                 //Start to process machine
@@ -302,8 +302,8 @@ namespace ConfigureMachineOutputs.Framework.Patches
                     }
                     return false;
                 }
-                int which = -1;
-                    int howMany = 1;
+                var which = -1;
+                    var howMany = 1;
                     switch (Game1.random.Next(4))
                     {
                         case 0:
@@ -345,7 +345,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 _minOut = _config.Machines.Keg.CustomKegEnabled ? _config.Machines.Keg.KegMinOutput : 1;
                 _maxOut = _config.Machines.Keg.CustomKegEnabled ? _config.Machines.Keg.KegMaxOutput : 1;
                 _rnd = new Random();
-                int totalInput = _config.Machines.Keg.CustomKegEnabled ? _input * 1 : 1;
+                var totalInput = _config.Machines.Keg.CustomKegEnabled ? _input * 1 : 1;
                 _output = _rnd.Next(_minOut, _maxOut) * _input;
 
                 //Make sure the player has enough items or fail
@@ -408,7 +408,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                         if (!probe)
                         {
                             machine.heldObject.Value.Stack = _output;
-                            string meadName = inputItem.Name.Replace("Honey", "");
+                            var meadName = inputItem.Name.Replace("Honey", "");
                             machine.heldObject.Value.Name = meadName +" Mead";
                             who.currentLocation.playSound("Ship");
                             who.currentLocation.playSound("bubbles");
@@ -528,7 +528,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 _minOut = _config.Machines.PreservesJar.CustomPreservesJarEnabled ? _config.Machines.PreservesJar.PreserveMinOutput : 1;
                 _maxOut = _config.Machines.PreservesJar.CustomPreservesJarEnabled ? _config.Machines.PreservesJar.PreserveMaxOutput : 1;
                 _rnd = new Random();
-                int totalInput = _config.Machines.PreservesJar.CustomPreservesJarEnabled ? _input * 1 : 1;
+                var totalInput = _config.Machines.PreservesJar.CustomPreservesJarEnabled ? _input * 1 : 1;
                 _output = _rnd.Next(_minOut, _maxOut) * _input;
 
                 //Make sure the player has enough items or fail
@@ -641,7 +641,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 _minOut = _config.Machines.CheesePress.CustomCheesePressEnabled ? _config.Machines.CheesePress.CheesePressMinOutput : 1;
                 _maxOut = _config.Machines.CheesePress.CustomCheesePressEnabled ? _config.Machines.CheesePress.CheesePressMaxOutput : 1;
                 _rnd = new Random();
-                int totalInput = _config.Machines.CheesePress.CustomCheesePressEnabled ? _input * 1 : 1;
+                var totalInput = _config.Machines.CheesePress.CustomCheesePressEnabled ? _input * 1 : 1;
                 _output = _rnd.Next(_minOut, _maxOut) * _input;
 
                 //Make sure the player has enough items or fail
@@ -707,7 +707,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 _minOut = _config.Machines.Mayonnaise.CustomMayoEnabled ? _config.Machines.Mayonnaise.MayoMinOutput : 1;
                 _maxOut = _config.Machines.Mayonnaise.CustomMayoEnabled ? _config.Machines.Mayonnaise.MayoMaxOutput : 1;
                 _rnd = new Random();
-                int totalInput = _config.Machines.Mayonnaise.CustomMayoEnabled ? _input * 1 : 1;
+                var totalInput = _config.Machines.Mayonnaise.CustomMayoEnabled ? _input * 1 : 1;
                 _output = _rnd.Next(_minOut, _maxOut) * _input;
 
                 //Make sure the player has enough input items
@@ -776,7 +776,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 _minOut = _config.Machines.Loom.CustomLoomEnabled ? _config.Machines.Loom.LoomMinOutput : 1;
                 _maxOut = _config.Machines.Loom.CustomLoomEnabled ? _config.Machines.Loom.LoomMaxOutput : 1;
                 _rnd = new Random();
-                int totalInput = _config.Machines.Loom.CustomLoomEnabled ? _input * 1 : 1;
+                var totalInput = _config.Machines.Loom.CustomLoomEnabled ? _input * 1 : 1;
                 _output = _rnd.Next(_minOut, _maxOut) * _input;
 
                 //Make sure the player has enough items or fail
@@ -805,7 +805,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 _minOut = _config.Machines.OilMaker.CustomOilMakerEnabled ? _config.Machines.OilMaker.OilMakerMinOutput : 1;
                 _maxOut = _config.Machines.OilMaker.CustomOilMakerEnabled ? _config.Machines.OilMaker.OilMakerMaxOutput : 1;
                 _rnd = new Random();
-                int totalInput = _config.Machines.OilMaker.CustomOilMakerEnabled ? _input * 1 : 1;
+                var totalInput = _config.Machines.OilMaker.CustomOilMakerEnabled ? _input * 1 : 1;
                 _output = _rnd.Next(_minOut, _maxOut) * _input;
 
                 //Make sure the player has enough items or fail
@@ -885,9 +885,9 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 _minOut = _config.Machines.SeedMaker.CustomSeedMakerEnabled ? _config.Machines.SeedMaker.SeedMakerMinOutput : 1;
                 _maxOut = _config.Machines.SeedMaker.CustomSeedMakerEnabled ? _config.Machines.SeedMaker.SeedMakerMaxOutput : 1;
                 _rnd = _config.Machines.SeedMaker.CustomSeedMakerEnabled ? new Random() : new Random((int)Game1.stats.DaysPlayed + (int)Game1.uniqueIDForThisGame / 2 + (int)machine.TileLocation.X + (int)machine.TileLocation.Y * 77 + Game1.timeOfDay);
-                int totalInput = _config.Machines.SeedMaker.CustomSeedMakerEnabled ? _input * 1 : 1;
+                var totalInput = _config.Machines.SeedMaker.CustomSeedMakerEnabled ? _input * 1 : 1;
                 _output = _config.Machines.SeedMaker.CustomSeedMakerEnabled ? _rnd.Next(_minOut, _maxOut) * _input : _rnd.Next(1, 4) * _input;
-                int outputAdded = _config.Machines.SeedMaker.MoreSeedsForQuality ? inputItem.Quality : 0;
+                var outputAdded = _config.Machines.SeedMaker.MoreSeedsForQuality ? inputItem.Quality : 0;
 
                 if (inputItem.ParentSheetIndex == 433)
                     return false;
@@ -899,9 +899,9 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 }
 
                 //Lets grab the crop data
-                int pts = -1;
-                bool found = false;
-                Dictionary<int, string> crops = Game1.temporaryContent.Load<Dictionary<int, string>>("Data\\Crops");
+                var pts = -1;
+                var found = false;
+                var crops = Game1.temporaryContent.Load<Dictionary<int, string>>("Data\\Crops");
                 foreach (var crop in crops)
                 {
                     if (Convert.ToInt32(crop.Value.Split('/')[3]) == inputItem.ParentSheetIndex)
@@ -940,7 +940,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 _minOut = _config.Machines.Crystalarium.CustomCrystalariumEnabled ? _config.Machines.Crystalarium.CrystalMinOutput : 1;
                 _maxOut = _config.Machines.Crystalarium.CustomCrystalariumEnabled ? _config.Machines.Crystalarium.CystalMaxOutput : 1;
                 _rnd = new Random();
-                int totalInput = _config.Machines.Crystalarium.CustomCrystalariumEnabled ? _input * 1 : 1;
+                var totalInput = _config.Machines.Crystalarium.CustomCrystalariumEnabled ? _input * 1 : 1;
                 _output = _rnd.Next(_minOut, _maxOut) * _input;
 
                 //Make sure the player has enough items or fail
@@ -970,36 +970,36 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 //Need to check to see if Custom Recycling Machine is enabled.
                 _input = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.CustomRecyclingInputMultiplier : 1;
                 _rnd = _rnd = _config.Machines.Recycling.CustomRecyclingEnabled ? new Random() : new Random((int)Game1.uniqueIDForThisGame / 2 + (int)Game1.stats.DaysPlayed + Game1.timeOfDay + (int)machine.TileLocation.X * 200 + (int)machine.TileLocation.Y);
-                int totalInput = _config.Machines.Recycling.CustomRecyclingEnabled ? _input * 1 : 1;
-                int pts = 0;
-                bool replaceStoneWithOreEnabled = _config.Machines.Recycling.ReplaceStoneWithOreEnabled;
-                int stoneMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled
+                var totalInput = _config.Machines.Recycling.CustomRecyclingEnabled ? _input * 1 : 1;
+                var pts = 0;
+                var replaceStoneWithOreEnabled = _config.Machines.Recycling.ReplaceStoneWithOreEnabled;
+                var stoneMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled
                     ? _config.Machines.Recycling.StoneMinOutput
                     : 1;
-                int stoneMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.StoneMaxOutput : 4;
-                double stoneToCopperChance = _config.Machines.Recycling.StoneToCopperChance;
-                double stoneToIronChance = _config.Machines.Recycling.StoneToIronChance;
-                double stoneToGoldChance = _config.Machines.Recycling.StoneToGoldChance;
-                double stoneToIridiumChance = _config.Machines.Recycling.StoneToIridiumChance;
-                bool replaceOreOutput = _config.Machines.Recycling.ReplaceOreOutput;
-                int copperMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.CopperMinOutput : 1;
-                int copperMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.CopperMaxOutput : 1;
-                int ironMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.IronMinOutput : 1;
-                int ironMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.IronMaxOutput : 4;
-                int goldMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.GoldMinOutput : 1;
-                int goldMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.GoldMaxOutput : 1;
-                int iridiumMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.IridiumMinOutput : 1;
-                int iridiumMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.IridiumMaxOutput : 1;
-                int woodMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.WoodMinOutput : 1;
-                int woodMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.WoodMaxOutput : 4;
-                int refinedQuartzMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.RefinedQuartzMinOutput : 1;
-                int refinedQuartzMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.RefinedQuartzMaxOutput : 1;
-                int coalMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.CoalMinOutput : 1;
-                int coalMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.CoalMaxOutput : 1;
-                int clothMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.ClothMinOutput : 1;
-                int clothMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.ClothMaxOutput : 1;
-                int torchMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.TorchMinOutput : 3;
-                int torchMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.TorchMaxOutput : 3;
+                var stoneMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.StoneMaxOutput : 4;
+                var stoneToCopperChance = _config.Machines.Recycling.StoneToCopperChance;
+                var stoneToIronChance = _config.Machines.Recycling.StoneToIronChance;
+                var stoneToGoldChance = _config.Machines.Recycling.StoneToGoldChance;
+                var stoneToIridiumChance = _config.Machines.Recycling.StoneToIridiumChance;
+                var replaceOreOutput = _config.Machines.Recycling.ReplaceOreOutput;
+                var copperMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.CopperMinOutput : 1;
+                var copperMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.CopperMaxOutput : 1;
+                var ironMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.IronMinOutput : 1;
+                var ironMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.IronMaxOutput : 4;
+                var goldMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.GoldMinOutput : 1;
+                var goldMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.GoldMaxOutput : 1;
+                var iridiumMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.IridiumMinOutput : 1;
+                var iridiumMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.IridiumMaxOutput : 1;
+                var woodMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.WoodMinOutput : 1;
+                var woodMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.WoodMaxOutput : 4;
+                var refinedQuartzMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.RefinedQuartzMinOutput : 1;
+                var refinedQuartzMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.RefinedQuartzMaxOutput : 1;
+                var coalMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.CoalMinOutput : 1;
+                var coalMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.CoalMaxOutput : 1;
+                var clothMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.ClothMinOutput : 1;
+                var clothMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.ClothMaxOutput : 1;
+                var torchMinOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.TorchMinOutput : 3;
+                var torchMaxOutput = _config.Machines.Recycling.CustomRecyclingEnabled ? _config.Machines.Recycling.TorchMaxOutput : 3;
                 //Make sure the player has enough items or fail
                 if (Game1.player.getTallyOfObject(inputItem.ParentSheetIndex, false) < totalInput && !probe)
                 {
@@ -1033,8 +1033,8 @@ namespace ConfigureMachineOutputs.Framework.Patches
                     }
                     if (!probe)
                     {
-                        int recOut = 0;
-                        int newPts = 0;
+                        var recOut = 0;
+                        var newPts = 0;
                         switch (pts)
                         {
                             case 93://Torch Amt: 3
@@ -1128,9 +1128,9 @@ namespace ConfigureMachineOutputs.Framework.Patches
                     _rnd = new Random();
                     _output = _rnd.Next(_minOut, _maxOut) * _input;
                 }
-                int totalCoalInput = _config.Machines.Furnace.CustomFurnaceEnabled ? _input : 1;
-                int totalOreInput = _config.Machines.Furnace.CustomFurnaceEnabled ? 5 * _input : 5;
-                int totalOutput = _config.Machines.Furnace.CustomFurnaceEnabled ? _output : 1;
+                var totalCoalInput = _config.Machines.Furnace.CustomFurnaceEnabled ? _input : 1;
+                var totalOreInput = _config.Machines.Furnace.CustomFurnaceEnabled ? 5 * _input : 5;
+                var totalOutput = _config.Machines.Furnace.CustomFurnaceEnabled ? _output : 1;
 
                 if (who.IsLocalPlayer && who.getTallyOfObject(382, false) <= totalCoalInput - 1)
                 {
@@ -1212,7 +1212,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 _minOut = _config.Machines.Charcoal.CustomCharcoalEnabled ? _config.Machines.Charcoal.CharcoalMinOutput : 1;
                 _maxOut = _config.Machines.Charcoal.CustomCharcoalEnabled ? _config.Machines.Charcoal.CharcoalMaxOutput : 1;
                 _rnd = new Random();
-                int totalInput = _config.Machines.Charcoal.CustomCharcoalEnabled ? _input * 1 : 1;
+                var totalInput = _config.Machines.Charcoal.CustomCharcoalEnabled ? _input * 1 : 1;
                 _output = _rnd.Next(_minOut, _maxOut) * _input;
 
                 //Make sure the player has enough items or fail
@@ -1247,7 +1247,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 _minOut = _config.Machines.SlimeEggPress.CustomSlimeEggPressEnabled ? _config.Machines.SlimeEggPress.SlimeMinOutput : 1;
                 _maxOut = _config.Machines.SlimeEggPress.CustomSlimeEggPressEnabled ? _config.Machines.SlimeEggPress.SlimeMaxOutput : 1;
                 _rnd = new Random();
-                int totalInput = _config.Machines.SlimeEggPress.CustomSlimeEggPressEnabled ? _input * 100 : 1;
+                var totalInput = _config.Machines.SlimeEggPress.CustomSlimeEggPressEnabled ? _input * 100 : 1;
                 _output = _rnd.Next(_minOut, _maxOut) * _input;
 
                 //Make sure the player has enough items or fail
@@ -1259,7 +1259,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 if (machine.heldObject.Value == null && !probe &&
                     (inputItem.ParentSheetIndex == 766 && HasEnough(766, totalInput)))
                 {
-                    int pts = 680;
+                    var pts = 680;
                     //Get random chance of the egg Output
                     if (Game1.random.NextDouble() < 0.05)
                         pts = 439;
@@ -1300,9 +1300,9 @@ namespace ConfigureMachineOutputs.Framework.Patches
                     var farm = Game1.getLocationFromName("Farm") as Farm;
                     if (farm != null)
                     {
-                        int piecesOfHay1 = (int)farm.piecesOfHay.Value;
-                        int addHay = farm.tryToAddHay(inputItem.Stack);
-                        int piecesOfHay2 = (int)farm.piecesOfHay.Value;
+                        var piecesOfHay1 = (int)farm.piecesOfHay.Value;
+                        var addHay = farm.tryToAddHay(inputItem.Stack);
+                        var piecesOfHay2 = (int)farm.piecesOfHay.Value;
                         if (piecesOfHay1 <= 0 && piecesOfHay2 > 0)
                             machine.showNextIndex.Value = true;
                         else if (piecesOfHay2 <= 0)
@@ -1326,7 +1326,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 return true;
             }
             //End
-            SObject object2 = machine.heldObject.Value;
+            var object2 = machine.heldObject.Value;
             return false;
         }
     }

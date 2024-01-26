@@ -35,20 +35,20 @@ namespace OneSprinklerOneScarecrow.Framework.Overrides
 
             return true;*/
             
-            if (__instance.QualifiedItemID == "(O)599")
+            if (__instance.QualifiedItemId == "(O)599")
             {
                 __result = 0;
             }
-            if (__instance.QualifiedItemID == "(O)621")
+            if (__instance.QualifiedItemId == "(O)621")
             {
                 __result = 1;
             }
-            if (__instance.QualifiedItemID == "(O)645")
+            if (__instance.QualifiedItemId == "(O)645")
             {
                 __result = 2;
             }
 
-            if (__instance.QualifiedItemID == $"(O){HaxorSprinkler.ItemID}")
+            if (__instance.QualifiedItemId == $"(O){HaxorSprinkler.ItemID}")
             {                
                 __result = 999;
             }

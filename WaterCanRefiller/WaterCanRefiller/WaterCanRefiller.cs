@@ -55,7 +55,7 @@ namespace WaterCanRefiller
         //Private custom Voids
         private bool HasWateringCan(bool mustBeHeld = false)
         {
-            bool found = false;
+            var found = false;
             //Go through the players inventory and look for the watering can.
             foreach (var f in Game1.player.Items)
             {

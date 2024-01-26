@@ -29,8 +29,17 @@ namespace StardewLocations
         private string getLocationName(string name, GameLocation loc)
         {
             var i18N = Helper.Translation;
-            
-            
+
+            if (loc is MineShaft shaft)
+            {
+                var mineToken = shaft.mineLevel > 120 ? "SkullCavern" : "UndergroundMine";
+                return "Current Location:\n\r" + i18N.Get(mineToken, new
+                {
+                    mine_level = shaft.mineLevel
+                });
+            }
+
+
             return "Current Location:\n\r" + i18N.Get(name, new
             {
                 farm_name = Game1.player.farmName,

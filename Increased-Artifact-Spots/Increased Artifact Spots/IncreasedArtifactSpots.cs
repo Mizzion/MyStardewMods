@@ -54,17 +54,17 @@ namespace Increased_Artifact_Spots
             var i18n = Helper.Translation;
             if (Config.ShowSpawnedNumArtifactSpots)
                 Game1.showGlobalMessage(i18n.Get("artifact_start"));
-            foreach (GameLocation loc in Game1.locations)
+            foreach (var loc in Game1.locations)
             {
                 
                 if (loc.IsFarm || !loc.IsOutdoors)
                     continue;
 
-                for (int i = 0; i < Config.AverageArtifactSpots; i++)
+                for (var i = 0; i < Config.AverageArtifactSpots; i++)
                 {
-                    int randomWidth = Game1.random.Next(loc.Map.DisplayWidth / Game1.tileSize);
-                    int randomHeight = Game1.random.Next(loc.Map.DisplayHeight / Game1.tileSize);
-                    Vector2 newLoc = new Vector2(randomWidth, randomHeight);
+                    var randomWidth = Game1.random.Next(loc.Map.DisplayWidth / Game1.tileSize);
+                    var randomHeight = Game1.random.Next(loc.Map.DisplayHeight / Game1.tileSize);
+                    var newLoc = new Vector2(randomWidth, randomHeight);
                     if (!loc.CanItemBePlacedHere(newLoc) ||
                         loc.getTileIndexAt(randomWidth, randomHeight, "AlwaysFront") != -1 ||
                         (loc.getTileIndexAt(randomWidth, randomHeight, "Front") != -1 ||
@@ -74,7 +74,7 @@ namespace Increased_Artifact_Spots
                           loc.doesTileHaveProperty(randomWidth, randomHeight, "Type", "Back") == null ||
                           !loc.doesTileHaveProperty(randomWidth, randomHeight, "Type", "Back").Equals("Grass"))) ||
                         (loc.Name.Equals("Forest") && randomWidth >= 93 && randomHeight <= 22)) continue;
-                    loc.objects.Add(newLoc, new Object(590, 1));
+                    loc.objects.Add(newLoc, new Object("590", 1));
                     locations.Add(new Tuple<string, Vector2>(loc.Name, newLoc));
                     //locDictionary.Add(loc.Name, newLoc);
                     SpawnedSpots++;
@@ -88,8 +88,8 @@ namespace Increased_Artifact_Spots
 
         private void ShowSpots(string command, string[] args)
         {
-            string arg = args[0];
-            Dictionary<string, int> spawns = new Dictionary<string, int>();
+            var arg = args[0];
+            var spawns = new Dictionary<string, int>();
             if (arg.ToLower() == "all")
             {
                 foreach (var i in locations)

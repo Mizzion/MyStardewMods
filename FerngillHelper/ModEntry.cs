@@ -160,7 +160,7 @@ namespace FerngillHelper
                         var day = days > 1 ? "Days" : "Day";
 
                         //Lets capitalize the first letter of the season
-                        TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+                        var textInfo = CultureInfo.CurrentCulture.TextInfo;
                         var capSeason = textInfo.ToTitleCase(testDate.Season);
 
                         daysToGo = canBeHarvested ? "Harvest in: Harvest Ready" : $"Harvest On: {capSeason} {testDate.Day}({days} {day} from now)";

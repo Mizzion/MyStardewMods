@@ -306,8 +306,8 @@ namespace FarmCleaner
             {
                 if(Game1.player.currentLocation is MineShaft mine)
                 {
-                    int x = (Game1.player.getStandingX() / 64) + 1;
-                    int y = (Game1.player.getStandingY() / 64) + 1;
+                    var x = (Game1.player.getStandingX() / 64) + 1;
+                    var y = (Game1.player.getStandingY() / 64) + 1;
                     mine.createLadderAt(new Vector2(x, y));
                     Monitor.Log($"X: {x}, Y: {y}", LogLevel.Debug);
                 }
@@ -848,7 +848,7 @@ namespace FarmCleaner
                     if (loc.Name.Contains("UndergroundMine"))
                     {
 
-                        int r = rnd.Next(1, _stone.Keys.Count);
+                        var r = rnd.Next(1, _stone.Keys.Count);
                         if (r == 1)
                         {
                             //l.createLadderAt(new Vector2(st.Key.X, st.Key.Y));
@@ -1010,11 +1010,11 @@ namespace FarmCleaner
 
         private void GetObjects(GameLocation loc)
         {
-            string foundObjects = "Found Objects: ";
-            string foundTerrain = "Found Terrain: ";
-            string terrain = "";
-            string forage = "";
-            string foundForage = "Found Forage: ";
+            var foundObjects = "Found Objects: ";
+            var foundTerrain = "Found Terrain: ";
+            var terrain = "";
+            var forage = "";
+            var foundForage = "Found Forage: ";
             int objNum = 0, terNum = 0, forNum = 0;
             //Objects.
             foreach (var obj in loc.objects.Pairs.ToList())

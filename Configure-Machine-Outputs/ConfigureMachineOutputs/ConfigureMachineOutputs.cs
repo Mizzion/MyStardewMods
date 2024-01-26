@@ -69,14 +69,14 @@ namespace ConfigureMachineOutputs
                 }
 
                 //Go through and set up the patching
-                foreach (Type t in typesToPatch)
-                foreach (KeyValuePair<string, Type> replacement in replacements)
+                foreach (var t in typesToPatch)
+                foreach (var replacement in replacements)
                 {
-                    MethodInfo original = t.GetMethods(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(m => m.Name == replacement.Key);
+                    var original = t.GetMethods(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(m => m.Name == replacement.Key);
 
-                    MethodInfo prefix = replacement.Value
+                    var prefix = replacement.Value
                         .GetMethods(BindingFlags.Static | BindingFlags.Public).FirstOrDefault(item => item.Name == "Prefix");
-                    MethodInfo postfix = replacement.Value
+                    var postfix = replacement.Value
                         .GetMethods(BindingFlags.Static | BindingFlags.Public).FirstOrDefault(item => item.Name == "Postfix");
 
                     //this.Monitor.Log($"Patching {original} with {prefix} {postfix}", LogLevel.Trace);
@@ -105,9 +105,9 @@ namespace ConfigureMachineOutputs
                 return;
             if (e.IsDown(SButton.NumPad8) && _debugging)
             {
-                List<GameLocation> locations = getLocations();
+                var locations = getLocations();
 
-                foreach (GameLocation loc in locations)
+                foreach (var loc in locations)
                 {
                     foreach (var obj in loc.objects.Values)
                     {
@@ -133,8 +133,8 @@ namespace ConfigureMachineOutputs
 
         private List<GameLocation> getLocations()
         {
-            List<GameLocation> location = new List<GameLocation>();
-            foreach (GameLocation loc in Game1.locations)
+            var location = new List<GameLocation>();
+            foreach (var loc in Game1.locations)
             {
                 if (loc.Name.Contains("Farm") || loc.Name.Contains("Green") || loc.Name.Contains("Coop") ||
                     loc.Name.Contains("Barn") || loc.Name.Contains("Cellar") || loc.Name.Contains("Shed"))

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,6 +15,9 @@ using StardewValley.Buildings;
 using StardewValley.Locations;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
+using StardewValley.GameData;
+using StardewValley.GameData.BigCraftables;
+using StardewValley.GameData.Objects;
 using SObject = StardewValley.Object;
 
 namespace OneSprinklerOneScarecrow
@@ -37,6 +41,8 @@ namespace OneSprinklerOneScarecrow
 
             //Events that happen in the game
             helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
+
+            helper.Events.Input.ButtonPressed += OnButtonPressed;
 
             
             //Apply Harmony Patches
@@ -62,59 +68,77 @@ namespace OneSprinklerOneScarecrow
 
         private void ContentEvent_AssetRequested(object sender, AssetRequestedEventArgs e)
         {
+            //Sprinkler
             HaxorSprinkler.TranslatedName = Helper.Translation.Get("haxorsprinkler.name");
             HaxorSprinkler.TranslatedDescription = Helper.Translation.Get("haxorsprinkler.description");
+            HaxorSprinkler.Texture = Helper.ModContent.GetInternalAssetName("assets/HaxorSprinkler.png").ToString()?.Replace("/", "\\");
+
+            //Scarecrow
             HaxorScarecrow.TranslatedName = Helper.Translation.Get("haxorscarecrow.name");
             HaxorScarecrow.TranslatedDescription = Helper.Translation.Get("haxorscarecrow.description");
+            HaxorScarecrow.Texture = Helper.ModContent.GetInternalAssetName("assets/HaxorScarecrow.png").ToString()?.Replace("/", "\\");
             
+
             //Lets start editing the content files.
-            
-            if (e.NameWithoutLocale.IsEquivalentTo("Data/ObjectInformation"))
+
+            if (e.NameWithoutLocale.IsEquivalentTo("Data/Objects"))
             {
                 e.Edit(asset =>
                 {
-                    var itemTexture = Helper.ModContent.GetInternalAssetName("Assets/HaxorSprinkler.png").ToString()?.Replace("/", "\\");
-                    string ass = $"{HaxorSprinkler.Name}/{HaxorSprinkler.Price}/{HaxorSprinkler.Edibility}/{HaxorSprinkler.Type} {HaxorSprinkler.Category}/{HaxorSprinkler.TranslatedName}/{HaxorSprinkler.TranslatedDescription}////{HaxorSprinkler.ParentSheetIndex}/{itemTexture}";
-                    asset.AsDictionary<string, string>().Data.Add($"{HaxorSprinkler.ItemID}", ass);
-                    Monitor.Log($"Added Name: {HaxorSprinkler.Name}({HaxorSprinkler.TranslatedName}) Id: {HaxorSprinkler.ParentSheetIndex}.\r\n {ass}");
+                    var data = asset.AsDictionary<string, ObjectData>();
 
-                    //Testing this shit.
-                    if (isDebugging)
+                    var haxorSprinkler = new ObjectData()
                     {
-                        var s = $"{HaxorSprinkler.Name}/{HaxorSprinkler.Price}/{HaxorSprinkler.Edibility}/{HaxorSprinkler.Type} {HaxorSprinkler.Category}/{HaxorSprinkler.TranslatedName}/{HaxorSprinkler.TranslatedDescription}////{HaxorSprinkler.ParentSheetIndex}/{itemTexture}";
-                        var s1 = s.Split('/');
-                        var num = 0;
-                        foreach (var item in s1)
-                        {
-                            num++;
-                            var n = num - 1;
-                            Monitor.Log($"{n} : {s1[n]}: {item}");
-                        }
+                        Name = HaxorSprinkler.ItemID,
+                        DisplayName = HaxorSprinkler.TranslatedName,
+                        Price = HaxorSprinkler.Price,
+                        Description = HaxorSprinkler.TranslatedDescription,
+                        SpriteIndex = HaxorSprinkler.ParentSheetIndex,
+                        Texture = HaxorSprinkler.Texture,
+                        Type = HaxorSprinkler.Type,
+                        Category = HaxorSprinkler.Category
+                    };
+
+                    var newItem = new Dictionary<string, ObjectData>()
+                    {
+                        { HaxorSprinkler.ItemID, haxorSprinkler }
+                    };
+
+                    foreach (var a in newItem.Where(a => !data.Data.Contains(a)))
+                    {
+                        data.Data.Add(a);
                     }
+
                 });
                 
 
                 
             }
-            else if (e.NameWithoutLocale.IsEquivalentTo("Data/BigCraftablesInformation"))
+            else if (e.NameWithoutLocale.IsEquivalentTo("Data/BigCraftables"))
             {
                 e.Edit(asset =>
                 {
-                    var itemTexture = Helper.ModContent.GetInternalAssetName("Assets/HaxorScarecrow.png").ToString()?.Replace("/", "\\");
-                    asset.AsDictionary<string, string>().Data.Add($"{HaxorScarecrow.ItemID}", $"{HaxorScarecrow.Name}/{HaxorScarecrow.Price}/{HaxorScarecrow.Edibility}/{HaxorScarecrow.Type} {HaxorScarecrow.Category}/{HaxorScarecrow.TranslatedDescription}/true/false/0//{HaxorScarecrow.TranslatedName}/{HaxorScarecrow.ParentSheetIndex}/{itemTexture}");
-                    Monitor.Log($"Added Name: {HaxorScarecrow.Name}({HaxorScarecrow.TranslatedName}). Id: {HaxorScarecrow.ItemID}");
-                    //Testing this shit.
-                    if (isDebugging)
+                    var data = asset.AsDictionary<string, BigCraftableData>();
+
+                    var haxorCrow = new BigCraftableData()
                     {
-                        var s = $"{HaxorScarecrow.Name}/{HaxorScarecrow.Price}/{HaxorScarecrow.Edibility}/{HaxorScarecrow.Type} {HaxorScarecrow.Category}/{HaxorScarecrow.TranslatedDescription}/true/false/0//{HaxorScarecrow.TranslatedName}/{HaxorScarecrow.ParentSheetIndex}/{itemTexture}";
-                        var s1 = s.Split('/');
-                        var num = 0;
-                        foreach (var item in s1)
-                        {
-                            num++;
-                            var n = num - 1;
-                            Monitor.Log($"{n} : {s1[n]}: {item}");
-                        }
+                        Name = HaxorScarecrow.ItemID,
+                        DisplayName = HaxorScarecrow.TranslatedName,
+                        Price = HaxorScarecrow.Price,
+                        Description = HaxorScarecrow.TranslatedDescription,
+                        SpriteIndex = HaxorScarecrow.ParentSheetIndex,
+                        Texture = HaxorScarecrow.Texture,
+                        CanBePlacedOutdoors = HaxorScarecrow.CanBePlacedOutside,
+                        CanBePlacedIndoors = HaxorScarecrow.CanBePlacedInside,
+                        ContextTags = new List<string>(){"crow_scare", "crow_scare_radius_300"}
+                        
+                    };
+
+                    var newItem = new Dictionary<string, BigCraftableData>() {{HaxorScarecrow.ItemID, haxorCrow }};
+                    
+                    foreach (var a in newItem.Where(a => !data.Data.Contains(a)))
+                    {
+                        data.Data.Add(a);
                     }
                 });
                 
@@ -137,11 +161,11 @@ namespace OneSprinklerOneScarecrow
                 {
                     var curData = asset.AsDictionary<string, string>();
                     //bool isEn = asset.Locale == "en";
-                    string isEnSprik = asset.Locale != "en" ? $"/{HaxorSprinkler.TranslatedName}" : "";
-                    string isEnScare = asset.Locale != "en" ? $"/{HaxorScarecrow.TranslatedName}" : "";
+                    var isEnSprik = asset.Locale != "en" ? $"/{HaxorSprinkler.TranslatedName}" : "";
+                    var isEnScare = asset.Locale != "en" ? $"/{HaxorScarecrow.TranslatedName}" : "";
                     Monitor.Log("Made it to the else");
-                    string sprinklerIngredientsOut = !_config.ActivateHarderIngredients ? $"390 100/Home/{HaxorSprinkler.ItemID}/false/null{isEnSprik}" : $"386 10/Home/{HaxorSprinkler.ItemID}/false/null{isEnSprik}";
-                    string scarecrowIngredientsOut = !_config.ActivateHarderIngredients ? $"388 100/Home/{HaxorScarecrow.ItemID}/true/null{isEnScare}" : $"337 10/Home/{HaxorScarecrow.ItemID}/true/null{isEnScare}";
+                    var sprinklerIngredientsOut = !_config.ActivateHarderIngredients ? $"390 100/Home/{HaxorSprinkler.ItemID}/false/null{isEnSprik}" : $"386 10/Home/{HaxorSprinkler.ItemID}/false/null{isEnSprik}";
+                    var scarecrowIngredientsOut = !_config.ActivateHarderIngredients ? $"388 100/Home/{HaxorScarecrow.ItemID}/true/null{isEnScare}" : $"337 10/Home/{HaxorScarecrow.ItemID}/true/null{isEnScare}";
 
                     if (curData.Data.ContainsKey("Haxor Sprinkler"))
                         curData.Data["Haxor Sprinkler"] = sprinklerIngredientsOut;
@@ -165,7 +189,7 @@ namespace OneSprinklerOneScarecrow
                     }
                 });
                 
-            }
+            }/*
             else if (e.NameWithoutLocale.IsEquivalentTo("Data/ObjectContextTags"))
             {
                 e.Edit(asset =>
@@ -173,6 +197,25 @@ namespace OneSprinklerOneScarecrow
                     asset.AsDictionary<string, string>().Data.Add($"{HaxorScarecrow.Name}", "crow_scare, crow_scare_radius_300");
                     Monitor.Log($"Added context tags for HaxorScarecrow.");
                 });
+            }*/
+        }
+
+        private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
+        {
+            if (!Context.IsWorldReady || !Context.IsPlayerFree)
+                return;
+
+            if (e.IsDown(SButton.NumPad7) && isDebugging)
+            {
+                var data = Game1.bigCraftableData; //asset.AsDictionary<string, BigCraftableData>().Data;
+
+                if (data is null)
+                    return;
+
+                foreach (var d in data)
+                {
+                    Monitor.Log($"String: {d.Key}, Data: {d.Value.DisplayName}");
+                }
             }
         }
 
@@ -196,7 +239,7 @@ namespace OneSprinklerOneScarecrow
         /// </summary>
         private void FixLegacyItems()
         {
-            Dictionary<Vector2, SObject> obj = new Dictionary<Vector2, SObject>();
+            var obj = new Dictionary<Vector2, SObject>();
             foreach (var o in Game1.getFarm().objects.Pairs)
             {
                 if (o.Value.Name.Contains("Haxor Sprinkler") && o.Value.ParentSheetIndex != HaxorSprinkler.ParentSheetIndex)
@@ -231,7 +274,7 @@ namespace OneSprinklerOneScarecrow
         /// </summary>
         private void AddRecipes()
         {
-            Dictionary<string, int> curRecipes = new Dictionary<string, int>();
+            var curRecipes = new Dictionary<string, int>();
 
             foreach (var r in Game1.player.craftingRecipes.Pairs)
             {
@@ -255,13 +298,13 @@ namespace OneSprinklerOneScarecrow
         /// <summary>Get all in-game locations.</summary>
         private IEnumerable<GameLocation> GetLocations()
         {
-            GameLocation[] mainLocations = (Context.IsMainPlayer ? Game1.locations : this.Helper.Multiplayer.GetActiveLocations()).ToArray();
+            var mainLocations = (Context.IsMainPlayer ? Game1.locations : this.Helper.Multiplayer.GetActiveLocations()).ToArray();
 
-            foreach (GameLocation location in mainLocations.Concat(MineShaft.activeMines).Concat(VolcanoDungeon.activeLevels))
+            foreach (var location in mainLocations.Concat(MineShaft.activeMines).Concat(VolcanoDungeon.activeLevels))
             {
                 yield return location;
 
-                foreach (Building building in location.buildings)
+                foreach (var building in location.buildings)
                 {
                     if (building.indoors.Value != null)
                         yield return building.indoors.Value;

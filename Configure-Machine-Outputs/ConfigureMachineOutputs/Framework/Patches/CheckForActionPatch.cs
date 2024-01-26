@@ -61,7 +61,7 @@ namespace ConfigureMachineOutputs.Framework.Patches
                 _monitor.Log("Postfixing SObject:checkForAction", LogLevel.Trace);
 
 
-            SObject machine = __instance;
+            var machine = __instance;
 
             //set up the random
             _rnd = new Random();

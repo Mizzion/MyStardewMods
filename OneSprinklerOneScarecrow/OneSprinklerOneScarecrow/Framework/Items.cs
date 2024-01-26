@@ -17,12 +17,15 @@ namespace OneSprinklerOneScarecrow.Framework
         public const string Name = "Haxor Sprinkler";
         public static string TranslatedName = "";
         public static string TranslatedDescription = "";
+        public static string Texture = "";
         public static string ItemID = "Mizzion.HaxorSprinkler";
         public static int ParentSheetIndex = 0;
         public const int Price = 2000;
         public const int Edibility = -300;
         public const int Category = StardewValley.Object.CraftingCategory;
         public const string Type = "Crafting";
+        public const bool CanBePlacedOutside = true;
+        public const bool CanBePlacedInside = false;
 
         public static Dictionary<int, int> Ingredients = new Dictionary<int, int>()
         {
@@ -40,12 +43,15 @@ namespace OneSprinklerOneScarecrow.Framework
         public const string Name = "Haxor Scarecrow";
         public static string TranslatedName = "";
         public static string TranslatedDescription = "";
+        public static string Texture = "";
         public static string ItemID = "Mizzion.HaxorScarecrow";
         public static int ParentSheetIndex = 0;
         public const int Price = 2000;
         public const int Edibility = -300;
         public const int Category = StardewValley.Object.BigCraftableCategory;
         public const string Type = "Crafting";
+        public const bool CanBePlacedOutside = true;
+        public const bool CanBePlacedInside = false;
 
         public static Dictionary<int, int> Ingredients = new Dictionary<int, int>()
         {
