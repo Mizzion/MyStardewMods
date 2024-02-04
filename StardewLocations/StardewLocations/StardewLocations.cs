@@ -28,30 +28,44 @@ namespace StardewLocations
         /// <param name="name">The in-game location name.</param>
         private string getLocationName(string name, GameLocation loc)
         {
-            var i18N = Helper.Translation;
+            var i18n = Helper.Translation;
+            var location = Game1.player.currentLocation;
+            var locationData = "";
 
-            if (loc is MineShaft shaft)
+            if (location is MineShaft shaft)
             {
-                var mineToken = shaft.mineLevel > 120 ? "SkullCavern" : "UndergroundMine";
-                return "Current Location:\n\r" + i18N.Get(mineToken, new
-                {
-                    mine_level = shaft.mineLevel
-                });
+                //Monitor.Log($"Entered Shaft: {shaft.mineLevel}");
+                locationData =  shaft.mineLevel > 120 ? $"Current Location:\n\rCavern Level: {shaft.mineLevel}.": $"Current Location:\n\rMine Level: {shaft.mineLevel}.";
             }
 
 
-            return "Current Location:\n\r" + i18N.Get(name, new
+            if (location is Cabin)
+            {
+                locationData = i18n.Get("location_text", null) + "\n\r"+ i18n.Get("Cabin", new
+                {
+                    cabin_owner = GetMapOwnersName(loc)
+                });
+            }
+
+            if (string.IsNullOrEmpty(locationData))
+            {
+                locationData = i18n.Get("location_text", null) + "\n\r" + Game1.currentLocation.DisplayName;
+            };
+            /*
+            var e = i18n.Get("location_text", null) +"\n\r" + i18n.Get(name, new
             {
                 farm_name = Game1.player.farmName,
                 player_name = Game1.player.Name,
                 cabin_owner = GetMapOwnersName(loc)
-            });
+            });*/
+
+            return locationData;
         }
 
         /// <summary>
         /// Get the map owners name, then returns it
         /// </summary>
-        /// <param name="loc">The map</param>
+        /// <param name="loc">The Map</param>
         /// <returns></returns>
         private string GetMapOwnersName(GameLocation loc)
         {

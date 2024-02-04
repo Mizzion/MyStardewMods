@@ -1,7 +1,7 @@
 {
   "Name": "Stardew Locations",
   "Author": "Mizzion",
-  "Version": "1.2.0",
+  "Version": "1.1.4",
   "Description": "A mod that shows your current location in the game.",
   "UniqueID": "mizzion.stardewlocations",
   "EntryDll": "StardewLocations.dll",
