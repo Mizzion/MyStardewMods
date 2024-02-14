@@ -1,7 +1,10 @@
-﻿using StardewModdingAPI;
+﻿using System.Linq;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.Buildings;
 using StardewValley.Locations;
+using MyStardewMods.Common;
 
 namespace StardewLocations
 {
@@ -21,7 +24,7 @@ namespace StardewLocations
         private void onWarped(object sender, WarpedEventArgs e)
         {
             if (e.IsLocalPlayer && Game1.player?.currentLocation != null)
-                Game1.showGlobalMessage(getLocationName(Game1.player.currentLocation.Name, Game1.currentLocation));
+                Game1.showGlobalMessage(getLocationName(e.NewLocation.Name, e.NewLocation));
         }
 
         /// <summary>Get the display name for an in-game location.</summary>
@@ -29,13 +32,14 @@ namespace StardewLocations
         private string getLocationName(string name, GameLocation loc)
         {
             var i18n = Helper.Translation;
-            var location = Game1.player.currentLocation;
+            var location = loc;//Game1.player.currentLocation;
             var locationData = "";
-
+            
+            
+            
             if (location is MineShaft shaft)
             {
-                //Monitor.Log($"Entered Shaft: {shaft.mineLevel}");
-                locationData =  shaft.mineLevel > 120 ? $"Current Location:\n\rCavern Level: {shaft.mineLevel}.": $"Current Location:\n\rMine Level: {shaft.mineLevel}.";
+                locationData =  shaft.mineLevel > 120 ? i18n.Get("location_text", null)+ $" \n\r" + i18n.Get("SkullCave", new { mine_level = shaft.mineLevel }) : i18n.Get("location_text", null) + $" \n\r" + i18n.Get("UndergroundMine", new { mine_level = shaft.mineLevel });
             }
 
 
@@ -46,19 +50,21 @@ namespace StardewLocations
                     cabin_owner = GetMapOwnersName(loc)
                 });
             }
-
-            if (string.IsNullOrEmpty(locationData))
-            {
-                locationData = i18n.Get("location_text", null) + "\n\r" + Game1.currentLocation.DisplayName;
-            };
-            /*
-            var e = i18n.Get("location_text", null) +"\n\r" + i18n.Get(name, new
+            
+            locationData = i18n.Get("location_text", null) + "\n\r" + i18n.Get(name, new
             {
                 farm_name = Game1.player.farmName,
                 player_name = Game1.player.Name,
                 cabin_owner = GetMapOwnersName(loc)
-            });*/
+            });
 
+
+            //Nothing Found use Default
+            if (string.IsNullOrEmpty(locationData) || locationData.Contains("translation"))
+            {
+                locationData = i18n.Get("location_text", null) + "\n\r" + Game1.currentLocation.Name;
+            };
+            
             return locationData;
         }
 

@@ -11,6 +11,7 @@ using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Locations;
 using StardewValley.Menus;
+using xTile;
 
 namespace IncreaseAnimalHouseMaxPopulation
 {
@@ -51,12 +52,13 @@ namespace IncreaseAnimalHouseMaxPopulation
             helper.Events.GameLoop.UpdateTicked += UpdateTicked;
             helper.Events.Input.ButtonPressed += ButtonPressed;
             helper.Events.Display.RenderingHud += RenderingHud;
+            helper.Events.Content.AssetRequested += AssetRequested;
 
             //Commands
             helper.ConsoleCommands.Add("pop_reset", "Deletes the save data for Increased Animal House Population.",
                 ResetSave);
 
-
+            
             DoSanityCheck();
         }
         //GameLoop Events
@@ -169,6 +171,34 @@ namespace IncreaseAnimalHouseMaxPopulation
         }
 
 
+        private void AssetRequested(object sender, AssetRequestedEventArgs e)
+        {
+            if (e.NameWithoutLocale.IsEquivalentTo("Maps/Coop3"))
+            {
+                e.Edit(asset =>
+                {
+                    var editor = asset.AsMap();
+                   Map map = Helper.ModContent.Load<Map>("assets/Coop3.tmx");
+                   editor.ExtendMap(minHeight: 10, minWidth: 46);
+                   editor.PatchMap(map, patchMode: PatchMapMode.Replace);
+                });
+                
+            }
+
+            if (e.NameWithoutLocale.IsEquivalentTo("Maps/Barn3"))
+            {
+                e.Edit(asset =>
+                {
+                    var editor = asset.AsMap();
+                    Map map = Helper.ModContent.Load<Map>("assets/Barn3.tmx");
+                    editor.ExtendMap(minHeight: 14, minWidth: 50);
+                    editor.PatchMap(map, patchMode: PatchMapMode.Replace);
+                });
+
+            }
+        }
+
+
         private void SaveLoaded(object sender, SaveLoadedEventArgs e)
         {
             _data = Helper.Data.ReadSaveData<PlayerData>(Helper.ModRegistry.ModID) ?? new PlayerData();
@@ -273,13 +303,20 @@ namespace IncreaseAnimalHouseMaxPopulation
             {
                 var loc = Game1.currentLocation;
 
-                if(loc is null) return;
+                if(loc is null)
+                {
+                    Monitor.Log("Loc was null");
+                    return;
+                }
 
                 foreach (var building in loc.buildings)
                 {
                     if (building.indoors.Value is not AnimalHouse animalHouse)
+                    {
+                        Monitor.Log("building.indoors wasnt an animal house");
                         continue;
-
+                    }
+                    
                     
                     var troughs = GetNumberTroughs(animalHouse);
                     Log($"{building.indoors.Value.uniqueName} has {troughs} troughs.");
@@ -288,33 +325,6 @@ namespace IncreaseAnimalHouseMaxPopulation
 
             }
 
-            if (e.IsDown(SButton.NumPad6))
-            {
-                var location = DataLoader.Locations(Game1.content);
-
-                foreach (var b in location)
-                {
-                    Log($"{b.Key}({b.Value.DisplayName})");
-                    var formerName = "";
-                    foreach (var t in b.Value.FormerLocationNames)
-                    {
-                        formerName += $"{t} ";
-                    }
-                    Log(formerName);
-                }
-            }
-
-            if (e.IsDown(SButton.NumPad7))
-            {
-                if(_data is not null)
-                    ModifyBuildings(Config.MainSettings.EnableDebugMode, true);
-            }
-
-            if (e.IsDown(SButton.NumPad8))
-            {
-                if (_data is not null)
-                    ModifyBuildings(Config.MainSettings.EnableDebugMode);
-            }
 
         }
 

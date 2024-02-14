@@ -294,9 +294,8 @@ namespace Increased_Artifact_Spots
                     locationData.ArtifactSpots.Count < 1 ||
                     (loc.Name.Contains("Desert") && !Game1.MasterPlayer.mailReceived.Contains("ccVault")) ||
                     (loc.Name.Contains("Island") && !Game1.MasterPlayer.hasCompletedCommunityCenter()) ||
-                    (loc.Name.Contains("Mountain") && Game1.stats.DaysPlayed < 31) ||
-                    (loc.Name.Contains("Railroad") && Game1.stats.DaysPlayed < 31) /*||
-                    (loc.Name.Contains("Cindersap") && )*/)
+                    ((loc.Name.Contains("Mountain") || loc.Name.Contains("Railroad")) && Game1.stats.DaysPlayed < 31) ||
+                    (loc.Name.Contains("Secret")))
                     continue;
 
                 if(!_validLocations.Contains(loc))
