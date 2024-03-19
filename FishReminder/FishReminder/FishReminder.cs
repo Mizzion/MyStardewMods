@@ -77,67 +77,67 @@ namespace FishReminder;
             }
             else if (e.IsDown(SButton.NumPad3))
             {
-            var locations = DataLoader.Locations(Game1.content);
-            var fishData = DataLoader.Fish(Game1.content);
+                var locations = DataLoader.Locations(Game1.content);
+                var fishData = DataLoader.Fish(Game1.content);
 
-            //Print out Location Data
+                //Print out Location Data
 
-            foreach (var location in locations)
-            {
-                var fishInArea = location.Value.Fish;
-                var fishString = "";
-                var itemName = "";
-
-
-
-                foreach (var fin in fishInArea)
+                foreach (var location in locations)
                 {
+                    var fishInArea = location.Value.Fish;
+                    var fishString = "";
+                    var itemName = "";
 
-                    if (!string.IsNullOrEmpty(fin.FishAreaId))
+
+
+                    foreach (var fin in fishInArea)
                     {
-                        if (!string.IsNullOrEmpty(fin.ItemId))
-                        {
-                            var item = ItemRegistry.GetMetadata(fin.ItemId);
-                            if (!item.Exists())
-                                continue;
 
-                            var it = item.CreateItemOrErrorItem();
-                            itemName = it.Name;
+                        if (!string.IsNullOrEmpty(fin.FishAreaId))
+                        {
+                            if (!string.IsNullOrEmpty(fin.ItemId))
+                            {
+                                var item = ItemRegistry.GetMetadata(fin.ItemId);
+                                if (!item.Exists())
+                                    continue;
+
+                                var it = item.CreateItemOrErrorItem();
+                                itemName = it.Name;
+                            }
+
+
+                            //fishString += $"{fin.ItemId}({itemName}), ";
+
+                            //fishString += $"{fin.ItemId}, ";
                         }
 
-
-                        //fishString += $"{fin.ItemId}({itemName}), ";
-
-                        //fishString += $"{fin.ItemId}, ";
+                        if (!string.IsNullOrEmpty(itemName))
+                        {
+                            fishString += $"Location: {location.Key} Chance: {fin.Chance} Season: {fin.Season} FishAreaId: {fin.FishAreaId} MinFishingLevel: {fin.MinFishingLevel} MinDistanceFromShore: {fin.MinDistanceFromShore} MaxDistanceFromShore: {fin.MaxDistanceFromShore} ApplyDailyLuck: {fin.ApplyDailyLuck} CuriosityLureBuff: {fin.CuriosityLureBuff} CatchLimit: {fin.CatchLimit} IsBossFish: {fin.IsBossFish} SetFlagOnCatch: {fin.SetFlagOnCatch} RequiredMagicBelt: {fin.RequireMagicBait} Precedence: {fin.Precedence} IgnoreFishDataRequirements: {fin.IgnoreFishDataRequirements} CanBeInherited: {fin.CanBeInherited} ItemId: {fin.ItemId}({itemName}) \r";
+                        }
+                        else
+                            fishString += $"Location: {location.Key} Chance: {fin.Chance} Season: {fin.Season} FishAreaId: {fin.FishAreaId} MinFishingLevel: {fin.MinFishingLevel} MinDistanceFromShore: {fin.MinDistanceFromShore} MaxDistanceFromShore: {fin.MaxDistanceFromShore} ApplyDailyLuck: {fin.ApplyDailyLuck} CuriosityLureBuff: {fin.CuriosityLureBuff} CatchLimit: {fin.CatchLimit} IsBossFish: {fin.IsBossFish} SetFlagOnCatch: {fin.SetFlagOnCatch} RequiredMagicBelt: {fin.RequireMagicBait} Precedence: {fin.Precedence} IgnoreFishDataRequirements: {fin.IgnoreFishDataRequirements} CanBeInherited: {fin.CanBeInherited} ItemId: {fin.ItemId} \r";
                     }
+                    if (!string.IsNullOrEmpty(fishString))
+                        Monitor.Log($"[Fish Area Id] Key: {location.Key} Value: {fishString}");
 
-                    if (!string.IsNullOrEmpty(itemName))
+                    /*
+                    foreach (var f in location.Value.FishAreas)
                     {
-                        fishString += $"Location: {location.Key} Chance: {fin.Chance} Season: {fin.Season} FishAreaId: {fin.FishAreaId} MinFishingLevel: {fin.MinFishingLevel} MinDistanceFromShore: {fin.MinDistanceFromShore} MaxDistanceFromShore: {fin.MaxDistanceFromShore} ApplyDailyLuck: {fin.ApplyDailyLuck} CuriosityLureBuff: {fin.CuriosityLureBuff} CatchLimit: {fin.CatchLimit} IsBossFish: {fin.IsBossFish} SetFlagOnCatch: {fin.SetFlagOnCatch} RequiredMagicBelt: {fin.RequireMagicBait} Precedence: {fin.Precedence} IgnoreFishDataRequirements: {fin.IgnoreFishDataRequirements} CanBeInherited: {fin.CanBeInherited} ItemId: {fin.ItemId}({itemName}) \r";
-                    }
-                    else
-                        fishString += $"Location: {location.Key} Chance: {fin.Chance} Season: {fin.Season} FishAreaId: {fin.FishAreaId} MinFishingLevel: {fin.MinFishingLevel} MinDistanceFromShore: {fin.MinDistanceFromShore} MaxDistanceFromShore: {fin.MaxDistanceFromShore} ApplyDailyLuck: {fin.ApplyDailyLuck} CuriosityLureBuff: {fin.CuriosityLureBuff} CatchLimit: {fin.CatchLimit} IsBossFish: {fin.IsBossFish} SetFlagOnCatch: {fin.SetFlagOnCatch} RequiredMagicBelt: {fin.RequireMagicBait} Precedence: {fin.Precedence} IgnoreFishDataRequirements: {fin.IgnoreFishDataRequirements} CanBeInherited: {fin.CanBeInherited} ItemId: {fin.ItemId} \r";
+                        Monitor.Log($"[Fish Areas] Key: {f.Key} Value: {f.Value.DisplayName}");
+                    }*/
                 }
-                if (!string.IsNullOrEmpty(fishString))
-                    Monitor.Log($"[Fish Area Id] Key: {location.Key} Value: {fishString}");
 
+
+                //Print out Fish Data
                 /*
-                foreach (var f in location.Value.FishAreas)
+                foreach (var fish in fishData)
                 {
-                    Monitor.Log($"[Fish Areas] Key: {f.Key} Value: {f.Value.DisplayName}");
+                    Monitor.Log($"[Fish Data] Key: {fish.Key} Value: {fish.Value}");
                 }*/
             }
 
-
-            //Print out Fish Data
-            /*
-            foreach (var fish in fishData)
-            {
-                Monitor.Log($"[Fish Data] Key: {fish.Key} Value: {fish.Value}");
-            }*/
         }
-
-    }
 
         /// <summary>Event that fires before a world is saved</summary>
         /// <param name="sender">The sender</param>
@@ -190,7 +190,7 @@ namespace FishReminder;
         private string GetNeededFish(bool doSeason = true, bool doWeather = false)
         {
             var locations = DataLoader.Locations(Game1.content);
-            
+            GrabFishInfo();
 
             var neededFish = "";
 

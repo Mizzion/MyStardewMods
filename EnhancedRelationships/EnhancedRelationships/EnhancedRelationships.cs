@@ -5,6 +5,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using Common.Integrations;
 using Object = StardewValley.Object;
 
 namespace EnhancedRelationships
@@ -16,186 +17,217 @@ namespace EnhancedRelationships
         private readonly IDictionary<string, int> _gaveNpcGift = new Dictionary<string, int>();
         private IDictionary<string, string> _npcGifts = new Dictionary<string, string>();
         private const bool Debugging = true;
+        private Mizzion.Stardew.Common.Integrations.GenericModConfigMenu.IGenericModConfigMenuApi _cfgMenu;
 
         public override void Entry(IModHelper helper)
         {
             _config = Helper.ReadConfig<ModConfig>();            
            
-            Helper.Events.GameLoop.DayStarted += TimeEvents_AfterDayStarted;
-            Helper.Events.GameLoop.Saving += SaveEvents_BeforeSave;
-            Helper.Events.Player.InventoryChanged += DoNpcGift;
+            //GameLoop Events
+            Helper.Events.GameLoop.DayStarted += DayStarted;
+            Helper.Events.GameLoop.Saving += Saving;
+            Helper.Events.GameLoop.GameLaunched += GameLaunched;
+
+            //Player Events
+            Helper.Events.Player.InventoryChanged += InventoryChanged;
+           
 
             //Let's add in the new content events
-            Helper.Events.Content.AssetRequested += ContentEvents_AssetRequested;
+            Helper.Events.Content.AssetRequested += AssetRequested;
         }
 
-        private void DoNpcGift(object sender, InventoryChangedEventArgs e)
+        private void GameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            var player = Game1.player;
-            
-            foreach(var location in Game1.locations)
-            {
-                foreach(var npc in location.characters)
-                {
-                    if (!_gaveNpcGift.ContainsKey(npc.Name))
-                    {
-                        if (player.friendshipData.ContainsKey(npc.Name))
-                        {
-                            _gaveNpcGift.Add(npc.Name, player.friendshipData[npc.Name].GiftsToday);
-                        }                        
-                    }
-                    else
-                    {
-                        if (npc.isBirthday())
-                        {
-                            _gaveNpcGift[npc.Name] = player.friendshipData[npc.Name].GiftsToday;
-                        }
-                    }                    
-                }
-            }
+            #region Generic Moc Config Menu
+            /*
+            _cfgMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (_cfgMenu is null) return;
+
+            //Register mod
+            _cfgMenu.Register(
+                mod: ModManifest,
+                reset: () => _config = new BoFConfig(),
+                save: () => Helper.WriteConfig(_config)
+                );
+
+            _cfgMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: () => "Bank of Ferngill Settings",
+                tooltip: null
+                );
+
+            _cfgMenu.AddNumberOption(
+                mod: ModManifest,
+                name: () => "Base Banking Interest",
+                tooltip: () => "The base value that gets calculated into the daily interest for any money in the bank",
+                getValue: () => _config.BaseBankingInterest,
+                setValue: value => _config.BaseBankingInterest = value
+            );
+
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => _config.EnableRandomEvents,
+                setValue: value => _config.EnableRandomEvents = value,
+                name: () => "Enable Random Events",
+                tooltip: () => "Enable Random Events, that happens during the nightly update. Win money, Lose money and so on. (Coming Soon)"
+            );
+
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => _config.EnableVaultRoomDeskActivation,
+                setValue: value => _config.EnableVaultRoomDeskActivation = value,
+                name: () => "Click desk for Bank",
+                tooltip: () => "Enable if you want to bypass needing the vault room completed to activate the bank."
+            );
+
+            _cfgMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: () => "Loan Settings",
+                tooltip: null
+                );
+
+            _cfgMenu.AddNumberOption(
+                mod: ModManifest,
+                name: () => "Loan Interest",
+                tooltip: () => "The base value that gets calculated into the interest for any loan you take out.",
+                getValue: () => _config.LoanSettings.LoanBaseInterest,
+                setValue: value => _config.LoanSettings.LoanBaseInterest = value
+            );
+
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => _config.LoanSettings.PayBackLoanDaily,
+                setValue: value => _config.LoanSettings.PayBackLoanDaily = value,
+                name: () => "Pay Back a Portion of Loan Daily",
+                tooltip: () => "If enabled you will pay back a portion of the loan each night. If possible"
+            );
+
+            _cfgMenu.AddNumberOption(
+                mod: ModManifest,
+                name: () => "Percentage of Loan to Pay Back Daily",
+                tooltip: () => "Percent of Loan Paid Daily",
+                getValue: () => _config.LoanSettings.PercentageOfLoanToPayBackDaily,
+                setValue: value => _config.LoanSettings.PercentageOfLoanToPayBackDaily = value
+            );
+
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => _config.LoanSettings.EnableUnlimitedLoansAtOnce,
+                setValue: value => _config.LoanSettings.EnableUnlimitedLoansAtOnce = value,
+                name: () => "Unlimited Loans",
+                tooltip: () => "If enabled you will be able to have any number of loans at once."
+            );
+
+            _cfgMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: () => "Hard Mode Settings",
+                tooltip: null
+                );
+
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => _config.HardModSettings.EnableHarderMode,
+                setValue: value => _config.HardModSettings.EnableHarderMode = value,
+                name: () => "Enable Hard Mode",
+                tooltip: () => "If enabled you will have debt that needs to be paid back before you can deposit any money."
+            );
+            _cfgMenu.AddNumberOption(
+                mod: ModManifest,
+                name: () => "Starting Debt",
+                tooltip: () => "How much debt to start with.",
+                getValue: () => _config.HardModSettings.HowFarInDebtAtStart,
+                setValue: value => _config.HardModSettings.HowFarInDebtAtStart = value
+            );
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => _config.HardModSettings.BypassHavingToRepayDebtFirst,
+                setValue: value => _config.HardModSettings.BypassHavingToRepayDebtFirst = value,
+                name: () => "Bypass Repaying Debt First",
+                tooltip: () => "If enabled you can deposit without first repaying your debt."
+            );*/
+            #endregion
         }
 
-
-        private void TimeEvents_AfterDayStarted(object sender, EventArgs e)
+        private void DayStarted(object sender, DayStartedEventArgs e)
         {
             try
             {
-                //Birthday tests was in AfterDay Started
                 _birthdayMessageQueue.Clear();
                 var today = SDate.Now();
-                if (today.DaysSinceStart != 1)
-                {
-                    var yesterday = SDate.Now().AddDays(-1);
-                    foreach (var location in Game1.locations)
-                    {
-                        foreach (var character in location.characters)
-                            DoLogic(character, yesterday.Day, yesterday.Season.ToString());
-                    }
+                var yesterday = today.AddDays(-1);
+                var chars = Utility.getAllCharacters();
 
-                    foreach (var birthdayMessage in _birthdayMessageQueue)
-                        birthdayMessage.CurrentDialogue.Push(new Dialogue(birthdayMessage, PickRandomDialogue()));
-                }
-            }
-            catch (Exception ex)
-            {
-                Monitor.Log(ex.ToString());
-            }
-           
-        }
-        private void SaveEvents_BeforeSave(object sender, EventArgs e)
-        {
-            if (!_config.GetMail)
-                return;
-            try
-            {
-                var tomorrow = SDate.Now().AddDays(1);
-                foreach (var location in Game1.locations)
+                if (today.DaysSinceStart != 1)
+                    return;
+                
+                foreach (var character in chars)
                 {
-                    foreach (var npc in location.characters.Where(npc => npc.Birthday_Season == tomorrow.SeasonKey && npc.Birthday_Day == tomorrow.Day))
-                    {
-                        Game1.mailbox.Add($"birthDayMail{npc.Name}");
-                    }
+                    DoLogic(character, yesterday.Day, GetSeason(yesterday.Season));
                 }
+
+                foreach (var birthdayMessage in _birthdayMessageQueue)
+                {
+                    birthdayMessage.CurrentDialogue.Push(new Dialogue(birthdayMessage, PickRandomDialogue()));
+                }
+                    
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 Monitor.Log(ex.ToString());
             }
-                      
         }
+        
+        
+        //Custom Voids
+        private string GetSeason(Season season)
+        {
+            string seasonName = "";
+            
+            switch(season)
+            {
+                case Season.Spring:
+                    seasonName = "Spring";
+                break;
+                
+                case Season.Summer:
+                    seasonName = "Summer";
+                    break;
+                case Season.Fall:
+                    seasonName = "Fall";
+                    break;
+                case Season.Winter:
+                    seasonName = "Winter";
+                    break;
+            }
+
+            return seasonName;
+        }
+
         private void DoLogic(NPC npc, int day, string season)
         {
-            var player = Game1.player;
-            var giftGiven = false;
-            if (!player.friendshipData.ContainsKey(npc.Name) || player.friendshipData[npc.Name].Points <= 0)
-                return;
-            var index = player.getFriendshipHeartLevelForNPC(npc.Name);
-            var basicAmount = _config.BasicAmount;
-            index = index > 10 ? 10 : index;
-            //Check to see if gift was given
-            if (_gaveNpcGift.TryGetValue(npc.Name, out var giftInt))
-            {
-                giftGiven = giftInt == 1;
-            }
-            //End check
-            if (_config.EnableMissedBirthdays && npc.Birthday_Season == season && npc.Birthday_Day == day && giftGiven == false)
-            {
-                var amount = !_config.EnableRounded ? (int)Math.Floor(basicAmount * (double)_config.BirthdayMultiplier * _config.BirthdayHeartMultiplier[index] + basicAmount * (double)_config.HeartMultiplier[index]) : (int)Math.Ceiling(basicAmount * (double)_config.BirthdayMultiplier * _config.BirthdayHeartMultiplier[index] + basicAmount * (double)_config.HeartMultiplier[index]);
-                amount *= -1;
-                Game1.player.changeFriendship(amount, npc);
-                _birthdayMessageQueue.Add(npc);
-                if (Debugging)
-                {
-                    Monitor.Log($"Message should have been added for {npc.Name}");
-                }
-
-                _gaveNpcGift.Remove(npc.Name);
-                Monitor.Log($"Decreased Friendship {amount} With : {npc.Name}");
-            }
-            else
-            {
-                if (player.friendshipData[npc.Name].GiftsThisWeek >= _config.AmtOfGiftsToKeepNpcHappy)
-                    return;
-                var amount = !_config.EnableRounded ? (int)Math.Floor(basicAmount * (double)_config.HeartMultiplier[index]) : (int)Math.Ceiling(basicAmount * (double)_config.HeartMultiplier[index]);
-                player.changeFriendship(amount, npc);
-                if (Debugging)
-                {
-                    Monitor.Log($"Increased Friendship {amount} With : {npc.Name}");
-                }
-                
-            }
+            
         }
 
-        private void ContentEvents_AssetRequested(object sender, AssetRequestedEventArgs e)
-        {
-            if (e.NameWithoutLocale.IsEquivalentTo("Data/mail"))
-            {
-                e.Edit(asset =>
-                {
-                    _npcGifts = GetNpcGifts();
-                    var i18N = Helper.Translation;
-                    foreach (var d in _npcGifts)
-                    {
-                        var npc = asset.AsDictionary<string, string>().Data;
-                        npc["birthDayMail" + d.Key] =
-                            i18N.Get("npc_mail", new { npc_name = d.Key, npc_gift = d.Value });
-                    }
-                });
-            }
-        }
-        
         private string PickRandomDialogue()
         {
-            var i18N = Helper.Translation;
-            var rnd = new Random();
-            var outer = rnd.Next(0, 7);
-            //Return the translated Text    
-            return i18N.Get("npc_dialogue"+outer, new { player_name = Game1.player.Name });           
+            
+            
         }
-        //Mail Updates
-        
-        //Grab NPC Gifts Loves
-        private IDictionary<string, string> GetNpcGifts(bool loved = true)
+
+        private IDictionary<string, string> GetNpcGifts(bool loved = false)
         {
-            if (loved)
-            {
-                if(Debugging)
-                    Monitor.Log("Loved was true");
-            }
+            var giftTastes = DataLoader.NpcGiftTastes(Game1.content);
 
-
-            var outer = Game1.NPCGiftTastes;
             IDictionary<string, string> results = new Dictionary<string, string>();
             var giftNames = "";
 
-            foreach (var o in outer)
+            foreach (var tastes in giftTastes)
             {
-                if (!o.Value.Contains('/')) continue;
-                giftNames = (from n in o.Value.Split('/')[1].Split(' ') where n.Length > 0 select new Object(n, 1) into obj where obj.DisplayName != "Error Item" select obj).Aggregate(giftNames, (current, obj) => current + $"{obj.DisplayName}, ");
-                if (giftNames.Contains(", "))
-                    results.Add(o.Key, giftNames.Substring(0, giftNames.Length - 2));
-                giftNames = "";
+                if (tastes.Value.Contains('/')) continue;
+                
             }
+
+
             return results;
         }
     }

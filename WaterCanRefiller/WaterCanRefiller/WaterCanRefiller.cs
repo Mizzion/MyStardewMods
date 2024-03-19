@@ -3,6 +3,7 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Tools;
 using WaterCanRefiller.Framework;
+using Common.Integrations;
 
 namespace WaterCanRefiller
 {
@@ -19,9 +20,17 @@ namespace WaterCanRefiller
             //Events
             helper.Events.GameLoop.OneSecondUpdateTicked += OneSecondUpdateTicked;//This event will trigger every second
             helper.Events.Input.ButtonPressed += ButtonPressed;//This event will trigger when a button is pressed.
+            helper.Events.GameLoop.GameLaunched += GameLaunched;
         }
 
         //Event Triggers
+
+        private void GameLaunched(object sender, GameLaunchedEventArgs e)
+        {
+            
+        }
+
+
         private void OneSecondUpdateTicked(object sender, OneSecondUpdateTickedEventArgs e)
         {
             if (!Context.IsWorldReady || !_config.ModEnabled)

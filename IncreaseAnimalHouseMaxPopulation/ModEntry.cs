@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GenericModConfigMenu;
+using Common.Integrations;
 using IncreaseAnimalHouseMaxPopulation.Framework;
 using IncreaseAnimalHouseMaxPopulation.Framework.Configs;
 using Microsoft.Xna.Framework;
@@ -19,7 +19,7 @@ namespace IncreaseAnimalHouseMaxPopulation
     {
         public ModConfig Config;
 
-        private IGenericModConfigMenuApi _cfgMenu;
+        private Mizzion.Stardew.Common.Integrations.GenericModConfigMenu.IGenericModConfigMenuApi _cfgMenu;
 
         private PlayerData _data;
 
@@ -66,7 +66,7 @@ namespace IncreaseAnimalHouseMaxPopulation
         private void GameLaunched(object sender, GameLaunchedEventArgs e)
         {
 
-            _cfgMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            _cfgMenu = Helper.ModRegistry.GetApi<Mizzion.Stardew.Common.Integrations.GenericModConfigMenu.IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
             if (_cfgMenu is null) return;
 
             //Register mod
@@ -541,10 +541,19 @@ namespace IncreaseAnimalHouseMaxPopulation
                 ? Config.BuildingSettings.MaxBarnPopulation
                 : Config.BuildingSettings.MaxCoopPopulation);
 
+            var curPop = ((AnimalHouse)build.indoors.Value).animalLimit.Value;
+
+            if (build is null)
+            {
+                Log($"Build was null.");
+                return;
+            }
+
             if (((AnimalHouse)build.indoors.Value).animalLimit.Value != pop && !_data.Buildings.ContainsKey(build.indoors.Value.uniqueName.Value))
             {
+                ((AnimalHouse)build.indoors.Value).animalLimit.Value = pop;
                 build.maxOccupants.Value = pop;
-                _data?.Buildings.TryAdd(build.indoors.Value.uniqueName.Value, true);
+                _data?.Buildings.TryAdd(build.indoors.Value.uniqueName.Value, true);                
             }
             else if (((AnimalHouse)build.indoors.Value).animalLimit.Value != pop)
             {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GenericModConfigMenu;
+using Common.Integrations;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -23,7 +23,7 @@ namespace Increased_Artifact_Spots
 
         private ITranslationHelper _i18N;
 
-        private IGenericModConfigMenuApi _cfgMenu;
+        private Mizzion.Stardew.Common.Integrations.GenericModConfigMenu.IGenericModConfigMenuApi _cfgMenu;
 
         //Populate location names
         private Dictionary<int, GameLocation> _locations;
@@ -81,7 +81,7 @@ namespace Increased_Artifact_Spots
 
         public void GameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            _cfgMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            _cfgMenu = Helper.ModRegistry.GetApi<Mizzion.Stardew.Common.Integrations.GenericModConfigMenu.IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
             if (_cfgMenu is null) return;
 
             //Register mod

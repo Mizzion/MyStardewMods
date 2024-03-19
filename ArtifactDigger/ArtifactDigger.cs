@@ -7,10 +7,11 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using MyStardewMods.Common;
+using Common.Integrations;
 using StardewValley.TerrainFeatures;
 using SObject = StardewValley.Object;
 using StardewValley.Tools;
-using GenericModConfigMenu;
+using Common.Integrations;
 using StardewModdingAPI.Utilities;
 
 
@@ -22,7 +23,7 @@ namespace ArtifactDigger
         private int _magneticRadius, _defaultMagneticRadius, _playerOriginalMagneticRadius, _radiusResetStatus;
         private bool _magneticRadiusResetActive;
         private ModConfig _config;
-        private IGenericModConfigMenuApi _cfgMenu;
+        private Mizzion.Stardew.Common.Integrations.GenericModConfigMenu.IGenericModConfigMenuApi _cfgMenu;
         string[] keys;
         private SButton _activateKey;
         private static Texture2D _buildingPlacementTiles;
@@ -69,7 +70,7 @@ namespace ArtifactDigger
         {
             #region "Generic Mod Config Menu"
 
-            _cfgMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            _cfgMenu = Helper.ModRegistry.GetApi<Mizzion.Stardew.Common.Integrations.GenericModConfigMenu.IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
             if (_cfgMenu is null) return;
 
             _cfgMenu.Register(
