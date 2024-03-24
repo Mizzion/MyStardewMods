@@ -1,0 +1,10 @@
+{
+  "Name": "FerngillHelper",
+  "Author": "Mizzion",
+  "Version": "0.0.1",
+  "Description": "Gives information based on cursor location",
+  "UniqueID": "mizzion.ferngillhelper",
+  "EntryDll": "FerngillHelper.dll",
+  "MinimumApiVersion": "3.15.0",
+  "UpdateKeys": [ "Nexus:3615", "ModDrop:661375" ]
+}

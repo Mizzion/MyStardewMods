@@ -2,9 +2,6 @@
   "upgrade_question": "Would you like to upgrade your {{current_building}} for {{next_cost}} gold? Your {{current_building}} will be changed from {{current_max_occupants}} to {{config_max_occupants}} max animals.",
   "upgrade_answer_yes": "Yes",
   "upgrade_answer_no": "No",
-<<<<<<< Updated upstream
-  "upgrade_tooltip_text": "{{current_building}}'s current max occupants is {{max_animals}}"
-=======
   "upgrade_tooltip_text": "{{current_building}}'s current max occupants is {{max_animals}}",
   "upgrade_tooltip_text_debug": "{{current_building}}'s current max occupants is {{max_animals}}. Building Name: {{building_name}}, Unique Building Name: {{unique_building_name}}.",
   "mod_name_text": "Increased Animal House Max Population Settings",
@@ -13,8 +10,6 @@
   "mod_cheats_text": "Cheats Settings",
   "setting_debug_text": "Enable Debug Mode",
   "setting_debug_description": "Enable or Disable the debug mode. Will show more info.",
-  "setting_mapedit_text": "Enable Map Edits",
-  "setting_mapedit_description" : "Enable the building map replacements. If changed, save and reload the game.",
   "setting_hover_text": "Enable Building Hovering",
   "setting_hover_description": "Enable or Disable showing info when you hover over a valid building.",
   "setting_reload_config_button_text": "Refresh Config Keybind",
@@ -29,5 +24,4 @@
   "setting_auto_feed_extra_animals_description": "Whether or not extra animals get auto fed.",
   "setting_enable_free_food_text": "Enable Free Feeding",
   "setting_enable_free_food_description": "Whether or not animals are fed for free."
->>>>>>> Stashed changes
 }

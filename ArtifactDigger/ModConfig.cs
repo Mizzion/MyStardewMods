@@ -1,10 +1,4 @@
 ﻿using StardewModdingAPI;
-using StardewModdingAPI.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ArtifactDigger
 {
@@ -19,8 +13,7 @@ namespace ArtifactDigger
         public bool AutoArtifactScan { get; set; } = false;
 
         //Button to Scan for artifacts
-        //public string ArtifactScanKey { get; set; } = "Z";
-        public SButton ArtifactScanKey  { get; set;} = SButton.Z;
+        public SButton ArtifactScanKey { get; set; } = SButton.Z;
 
         //Whether or not the mod should shake trees.
         public bool ShakeTrees { get; set; } = false;
