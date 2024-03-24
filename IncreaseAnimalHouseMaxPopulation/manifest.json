@@ -1,7 +1,11 @@
 {
     "Name": "Increase Animal House Max Population",
     "Author": "Mizzion",
+<<<<<<< Updated upstream
     "Version": "1.0.10",
+=======
+    "Version": "1.1.1",
+>>>>>>> Stashed changes
     "Description": "Allows the player to set the max population of Animal Houses.",
     "UniqueID": "mizzion.increaseanimalhousemaxpopulation",
     "EntryDll": "IncreaseAnimalHouseMaxPopulation.dll",

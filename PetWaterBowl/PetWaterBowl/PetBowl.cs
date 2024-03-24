@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewValley;
@@ -64,3 +65,4 @@ namespace PetWaterBowl
         }
     }
 }
+*/

@@ -56,12 +56,168 @@ namespace IncreaseAnimalHouseMaxPopulation
         private void GameLaunched(object sender, GameLaunchedEventArgs e)
         {
 
+<<<<<<< Updated upstream
+=======
+            _cfgMenu = Helper.ModRegistry.GetApi<Mizzion.Stardew.Common.Integrations.GenericModConfigMenu.IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (_cfgMenu is null) return;
+
+            //Register mod
+            _cfgMenu.Register(
+                mod: ModManifest,
+                reset: () => Config = new ModConfig(),
+                save: () => Helper.WriteConfig(Config)
+            );
+
+            _cfgMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: () => I18N.Get("mod_name_text"),
+                tooltip: null
+            );
+
+            //Main Settings
+
+            _cfgMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: () => I18N.Get("mod_main_settings_text"),
+                tooltip: null
+            );
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => Config.MainSettings.EnableDebugMode,
+                setValue: value => Config.MainSettings.EnableDebugMode = value,
+                name: () => I18N.Get("setting_debug_text"),
+                tooltip: () => I18N.Get("setting_debug_description")
+                );
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => Config.MainSettings.EnableHoverTip,
+                setValue: value => Config.MainSettings.EnableHoverTip = value,
+                name: () => I18N.Get("setting_hover_text"),
+                tooltip: () => I18N.Get("setting_hover_description")
+            );
+            _cfgMenu.AddKeybind(
+                mod: ModManifest,
+                getValue: () => Config.MainSettings.RefreshConfigButton,
+                setValue: value => Config.MainSettings.RefreshConfigButton = value,
+                name: () => I18N.Get("setting_reload_config_button_text"),
+                tooltip: () => I18N.Get("setting_reload_config_button_description")
+            );
+
+            //Building Settings
+            _cfgMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: () => I18N.Get("mod_building_settings_text"),
+                tooltip: null
+            );
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => Config.MainSettings.EnableBuildingMapReplacements,
+                setValue: value => Config.MainSettings.EnableBuildingMapReplacements = value,
+                name: () => I18N.Get("setting_mapedit_text"),
+                tooltip: () => I18N.Get("setting_mapedit_description")
+            );
+            
+            _cfgMenu.AddNumberOption(
+                mod: ModManifest,
+                getValue: () => Config.BuildingSettings.MaxBarnPopulation,
+                setValue: value => Config.BuildingSettings.MaxBarnPopulation = value,
+                name: () => I18N.Get("setting_max_barn_population_text"),
+                tooltip: () => I18N.Get("setting_max_barn_population_description")
+                );
+            _cfgMenu.AddNumberOption(
+                mod: ModManifest,
+                getValue: () => Config.BuildingSettings.MaxCoopPopulation,
+                setValue: value => Config.BuildingSettings.MaxCoopPopulation = value,
+                name: () => I18N.Get("setting_max_coop_population_text"),
+                tooltip: () => I18N.Get("setting_max_coop_population_description")
+                );
+            _cfgMenu.AddNumberOption(
+                mod: ModManifest,
+                getValue: () => Config.BuildingSettings.CostPerPopulationIncrease,
+                setValue: value => Config.BuildingSettings.CostPerPopulationIncrease = value,
+                name: () => I18N.Get("setting_cost_per_population_increase_text"),
+                tooltip: () => I18N.Get("setting_cost_per_population_increase_description")
+                );
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => Config.BuildingSettings.AutoFeedExtraAnimals,
+                setValue: value => Config.BuildingSettings.AutoFeedExtraAnimals = value,
+                name: () => I18N.Get("setting_auto_feed_extra_animals_text"),
+                tooltip: () => I18N.Get("setting_auto_feed_extra_animals_description")
+                );
+
+            //Cheat Settings
+            _cfgMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: () => I18N.Get("mod_cheats_text"),
+                tooltip: null
+            );
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => Config.Cheats.EnableFree,
+                setValue: value => Config.Cheats.EnableFree = value,
+                name: () => I18N.Get("setting_enable_free_food_text"),
+                tooltip: () => I18N.Get("setting_enable_free_food_description")
+                );
+>>>>>>> Stashed changes
         }
 
         private void ButtonPressed(object sender, ButtonPressedEventArgs e)
         {
             if (!Context.IsWorldReady)
             {
+<<<<<<< Updated upstream
+=======
+
+                CurrentHoveredBuilding = GetHoveredBuilding(Config.MainSettings.EnableDebugMode);
+            }
+        }
+
+
+        private void AssetRequested(object sender, AssetRequestedEventArgs e)
+        {
+            if (!Config.MainSettings.EnableBuildingMapReplacements)
+                return;
+            
+            if (e.NameWithoutLocale.IsEquivalentTo("Maps/Coop3"))
+            {
+                e.Edit(asset =>
+                {
+                    var editor = asset.AsMap();
+                   Map map = Helper.ModContent.Load<Map>("assets/Coop3.tmx");
+                   editor.ExtendMap(minHeight: 10, minWidth: 46);
+                   editor.PatchMap(map, patchMode: PatchMapMode.Replace);
+                });
+                
+            }
+
+            if (e.NameWithoutLocale.IsEquivalentTo("Maps/Barn3"))
+            {
+                e.Edit(asset =>
+                {
+                    var editor = asset.AsMap();
+                    Map map = Helper.ModContent.Load<Map>("assets/Barn3.tmx");
+                    editor.ExtendMap(minHeight: 14, minWidth: 50);
+                    editor.PatchMap(map, patchMode: PatchMapMode.Replace);
+                });
+
+            }
+        }
+
+
+        private void SaveLoaded(object sender, SaveLoadedEventArgs e)
+        {
+            _data = Helper.Data.ReadSaveData<PlayerData>(Helper.ModRegistry.ModID) ?? new PlayerData();
+
+            var dataFound = _data is null ? "_data couldn't be found" : "_data was either found or created";
+
+            if(Config.MainSettings.EnableDebugMode)
+                Log($"{dataFound}");
+        }
+        private void DayStarted(object sender, DayStartedEventArgs e)
+        {
+            if(!Context.IsWorldReady)
+>>>>>>> Stashed changes
                 return;
             }
 

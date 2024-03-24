@@ -6,6 +6,8 @@ namespace IncreaseAnimalHouseMaxPopulation.Framework.Configs
     {
         public bool EnableDebugMode { get; set; } = false;
 
+        public bool EnableBuildingMapReplacements { get; set; } = true;
+
 
         public bool EnableHoverTip { get; set; } = false;
 
