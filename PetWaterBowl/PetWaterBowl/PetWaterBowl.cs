@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Buildings;
-using xTile.Dimensions;
+using Mizzion.Stardew.Common.Integrations.GenericModConfigMenu;
 using SObject = StardewValley.Object;
+using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace PetWaterBowl
 {
@@ -19,7 +18,7 @@ namespace PetWaterBowl
         private bool _debugging = false;
         
         private ITranslationHelper _i18N;
-        private Mizzion.Stardew.Common.Integrations.GenericModConfigMenu.IGenericModConfigMenuApi _cfgMenu;
+        private IGenericModConfigMenuApi _cfgMenu;
         
 
         public override void Entry(IModHelper helper)
@@ -38,7 +37,7 @@ namespace PetWaterBowl
 
         private void GameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            _cfgMenu = Helper.ModRegistry.GetApi<Mizzion.Stardew.Common.Integrations.GenericModConfigMenu.IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            _cfgMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
             if (_cfgMenu is null) return;
 
             //Register mod
@@ -82,12 +81,6 @@ namespace PetWaterBowl
         
         private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
-<<<<<<< Updated upstream
-            //Vector2 preScan = CheckBowlLocation();
-            Farm farm = Game1.getFarm();
-            //farm.setMapTileIndex(Convert.ToInt32(preScan.X), Convert.ToInt32(preScan.Y), 1938, "Buildings");
-            WaterPetBowl(new Vector2(farm.petBowlPosition.X, farm.petBowlPosition.Y));
-=======
             if (!_config.EnableMod)
                 return;
             
@@ -122,24 +115,15 @@ namespace PetWaterBowl
             {
                 WaterPetBowl();
             }
->>>>>>> Stashed changes
         }
         
         /// <summary>
         /// Fills the pet bowl with water
-        /// </summary></param>
+        /// </summary>
         private void WaterPetBowl()
         {
-<<<<<<< Updated upstream
-            if (!_enableMod)
-                return;
-            Farm farm = Game1.getFarm();
-            if (Game1.isRaining || Game1.isLightning || (Game1.isSnowing && _enableSnowWatering) ||
-                (CheckForSprinklers(tileLocation) && _enableSprinklers))
-=======
             //Scan for water Bowl
             foreach (var locations in Game1.locations)
->>>>>>> Stashed changes
             {
                 var sprinklers = CheckForSprinklers(locations);
                 var bowls = CheckBowlLocation();
@@ -171,38 +155,20 @@ namespace PetWaterBowl
         
         private Dictionary<Vector2, SObject> CheckForSprinklers(GameLocation loc)
         {
-<<<<<<< Updated upstream
-            bool sprinklerFound = false;
-            Farm farm = Game1.getFarm();
-            foreach (KeyValuePair<Vector2, SObject> farmObjects in farm.objects.Pairs)
-            {
-                if (_config.EnableSprinklerWatering && farmObjects.Value.ParentSheetIndex == 645)
-                {
-                    for (int x = (int)tileLocation.X - 2; x <= tileLocation.X + 2; x++)
-                    {
-                        for (int y = (int) tileLocation.Y - 2; y <= tileLocation.Y + 2; y++)
-                        {
-                            Vector2 newLoc = new Vector2(x, y);
-                            if (farm.getTileIndexAt(Convert.ToInt32(newLoc.X), Convert.ToInt32(newLoc.Y),
-                                    "Buildings") == 1938)
-                                sprinklerFound = true;
-                        }
-=======
             if (loc is null)
                 return null;
-            
+
             var sprinklers = new Dictionary<Vector2, SObject>();
 
-            
-                foreach (var i in loc.objects.Pairs)
+
+            foreach (var i in loc.objects.Pairs)
+            {
+                if (i.Value.IsSprinkler())
                 {
-                    if (i.Value.IsSprinkler())
-                    {
-                        sprinklers.TryAdd(i.Key, i.Value);
->>>>>>> Stashed changes
-                    }
+                    sprinklers.TryAdd(i.Key, i.Value);
                 }
-            
+            }
+
             return sprinklers;
         }
         
@@ -212,17 +178,10 @@ namespace PetWaterBowl
         /// <returns>Returns a Vector2 of where it found the waterbowl.</returns>
         private List<Vector2> CheckBowlLocation()
         {
-<<<<<<< Updated upstream
-            Farm farm = Game1.getFarm();
-            for (int xTile = 0; xTile < farm.Map.Layers[0].LayerWidth; ++xTile)
-            {
-                for (int yTile = 0; yTile < farm.Map.Layers[0].LayerHeight; ++yTile)
-=======
             var bowlLocation = new List<Vector2>();
             foreach (var locations in Game1.locations)
             {
                 foreach (var bowl in locations.buildings.OfType<PetBowl>())
->>>>>>> Stashed changes
                 {
                     if (!bowlLocation.Contains(new Vector2(bowl.tileX.Value, bowl.tileY.Value)))
                         bowlLocation.Add(new Vector2(bowl.tileX.Value, bowl.tileY.Value));
