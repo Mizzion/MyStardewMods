@@ -1,14 +1,15 @@
-using System;
+﻿using System;
+//using GenericModConfigMenu.Framework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 
-namespace BankOfFerngill.Framework
+namespace Mizzion.Stardew.Common.Integrations.GenericModConfigMenu
 {
-        /// <summary>The API which lets other mods add a config UI through Generic Mod Config Menu.</summary>
-    public interface IGenericModConfigMenuApi
+    /// <summary>The API which lets other mods add a config UI through Generic Mod Config Menu.</summary>
+    public interface IGenericModConfigMenuApi // DELETE THIS LINE WHEN COPIED INTO YOUR MOD CODE
     {
         /*********
         ** Methods

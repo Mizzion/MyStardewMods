@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using IncreaseAnimalHouseMaxPopulation.Framework;
 using IncreaseAnimalHouseMaxPopulation.Framework.Configs;
 using Microsoft.Xna.Framework;
@@ -10,6 +11,8 @@ using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Locations;
 using StardewValley.Menus;
+
+using xTile;
 
 namespace IncreaseAnimalHouseMaxPopulation
 {
@@ -48,16 +51,14 @@ namespace IncreaseAnimalHouseMaxPopulation
             helper.Events.GameLoop.UpdateTicked += UpdateTicked;
             helper.Events.Input.ButtonPressed += ButtonPressed;
             helper.Events.Display.RenderingHud += RenderingHud;
-            helper.ConsoleCommands.Add("pop_reset", "Deletes the save data for Increased Animal House Population.",
-                ResetSave);
+            helper.ConsoleCommands.Add("pop_reset", "Deletes the save data for Increased Animal House Population.", ResetSave);
             DoSanityCheck();
         }
 
         private void GameLaunched(object sender, GameLaunchedEventArgs e)
         {
 
-<<<<<<< Updated upstream
-=======
+
             _cfgMenu = Helper.ModRegistry.GetApi<Mizzion.Stardew.Common.Integrations.GenericModConfigMenu.IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
             if (_cfgMenu is null) return;
 
@@ -159,16 +160,13 @@ namespace IncreaseAnimalHouseMaxPopulation
                 name: () => I18N.Get("setting_enable_free_food_text"),
                 tooltip: () => I18N.Get("setting_enable_free_food_description")
                 );
->>>>>>> Stashed changes
+
         }
 
         private void ButtonPressed(object sender, ButtonPressedEventArgs e)
         {
             if (!Context.IsWorldReady)
             {
-<<<<<<< Updated upstream
-=======
-
                 CurrentHoveredBuilding = GetHoveredBuilding(Config.MainSettings.EnableDebugMode);
             }
         }
@@ -217,18 +215,17 @@ namespace IncreaseAnimalHouseMaxPopulation
         private void DayStarted(object sender, DayStartedEventArgs e)
         {
             if(!Context.IsWorldReady)
->>>>>>> Stashed changes
                 return;
-            }
+        }
 
-            if (e.IsDown(RefreshConfig))
-            {
-                Config = Helper.ReadConfig<ModConfig>();
-                DoSanityCheck();
-                Monitor.Log("Reloaded the configuration file.", LogLevel.Debug);
-            }
+        if (e.IsDown(RefreshConfig))
+        {
+            Config = Helper.ReadConfig<ModConfig>();
+            DoSanityCheck();
+            Monitor.Log("Reloaded the configuration file.", LogLevel.Debug);
+        }
 
-            if (e.IsDown(SButton.F6) && IsTestBuild)
+    if (e.IsDown(SButton.F6) && IsTestBuild)
             {
                 DoPopChange(Config.MaxBarnPopulation, Config.MaxCoopPopulation);
             }
