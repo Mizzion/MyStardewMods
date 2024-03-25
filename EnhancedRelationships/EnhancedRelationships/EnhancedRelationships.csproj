@@ -3,13 +3,11 @@
     <AssemblyName>EnhancedRelationships</AssemblyName>
     <RootNamespace>EnhancedRelationships</RootNamespace>
     <Version>1.2.5</Version>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
+    <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.1" />
   </ItemGroup>
-
-  <Import Project="..\..\Common\Common\Common.projitems" Label="Shared" />
 </Project>

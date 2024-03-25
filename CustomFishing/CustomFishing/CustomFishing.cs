@@ -66,7 +66,7 @@ namespace CustomFishing
         }
         public void DrawTick(object sender, RenderedWorldEventArgs e)
         {
-            var inCave = Game1.currentLocation is MineShaft || Game1.currentLocation is FarmCave;
+            bool inCave = Game1.currentLocation is MineShaft || Game1.currentLocation is FarmCave;
             if (_showMessage)
             {
                 
@@ -85,7 +85,7 @@ namespace CustomFishing
             if (!Context.IsWorldReady || !_enabled)
                 return;
             //Everything should be good to proceed
-            var player = Game1.player;
+            SFarmer player = Game1.player;
             if (_enabled)
             {
                 if (Game1.activeClickableMenu == null && player.CurrentTool is FishingRod rod)
@@ -104,7 +104,7 @@ namespace CustomFishing
                 }
                 if (Game1.activeClickableMenu is BobberBar bobberMenu)
                 {
-                    GetFish(Helper.Reflection.GetField<string>(bobberMenu, "whichFish").GetValue());
+                    GetFish(Helper.Reflection.GetField<int>(bobberMenu, "whichFish").GetValue());
                     _fishingMsg = "Hooked Fish:\n\r" + _fishName;
                     _showMessage = true;
 
@@ -154,29 +154,26 @@ namespace CustomFishing
         }
         private void KeyPressed(object sender, ButtonPressedEventArgs e)
         {
-            switch (e.Button)
+            if(e.Button == SButton.F8)
             {
-                case SButton.F8:
-                    _config = Helper.ReadConfig<ModConfig>();
-                    RePopulateConfig();
-                    break;
-                case SButton.F7:
+                _config = Helper.ReadConfig<ModConfig>();
+                RePopulateConfig();
+            }
+            if(e.Button == SButton.F7)
+            {
+                int n1 = 1;
+                if (n1 == 2)
+                    return;
+                int o = _motionType;
+                if(o == 4)
                 {
-                    var n1 = 1;
-                    if (n1 == 2)
-                        return;
-                    var o = _motionType;
-                    if(o == 4)
-                    {
-                        _motionType = 0;
-                    }
-                    else
-                    {
-                        _motionType += 1;
-                    }
-                    Monitor.Log($"Changed MotionType to: {_motionType}", LogLevel.Alert);
-                    break;
+                    _motionType = 0;
                 }
+                else
+                {
+                    _motionType += 1;
+                }
+                Monitor.Log($"Changed MotionType to: {_motionType}", LogLevel.Alert);
             }
         }
         //Custom Voids
@@ -198,11 +195,11 @@ namespace CustomFishing
         //Draw Text Box Thanks to CJB for the coding in CJB Cheat Menu
         public static void DrawTextBox(int x, int y, SpriteFont font, string message, int align = 0, float colorIntensity = 1F)
         {
-            var spriteBatch = Game1.spriteBatch;
+            SpriteBatch spriteBatch = Game1.spriteBatch;
 
-            var bounds = font.MeasureString(message);
-            var width = (int)bounds.X + Game1.tileSize / 2;
-            var height = (int)font.MeasureString(message).Y + Game1.tileSize / 3;
+            Vector2 bounds = font.MeasureString(message);
+            int width = (int)bounds.X + Game1.tileSize / 2;
+            int height = (int)font.MeasureString(message).Y + Game1.tileSize / 3;
             switch (align)
             {
                 case 0:
@@ -219,14 +216,14 @@ namespace CustomFishing
                     break;
             }
         }
-        private void GetFish(string fish)
+        private void GetFish(int fish)
         {
-            var dFish = Game1.content.Load<Dictionary<string, string>>("Data\\Fish");
+            Dictionary<int, string> dFish = Game1.content.Load<Dictionary<int, string>>("Data\\Fish");
             if (dFish.ContainsKey(fish))
             {
-                var fishArray = dFish[fish].Split('/');
+                string[] fishArray = dFish[fish].Split('/');
                 _fishName = fishArray[0];
-                _dartingAmount = Convert.ToInt32(fishArray[1]);
+                _dartingAmount = (float)Convert.ToInt32(fishArray[1]);
                 _bobberBehavior = fishArray[2];
                 /*
                 switch (this.BobberBehavior)
@@ -249,7 +246,7 @@ namespace CustomFishing
                 }*/
                 _minFishSize = Convert.ToInt32(fishArray[3]);
                 _maxFishSize = Convert.ToInt32(fishArray[4]);
-                var fSpawn = fishArray[5].Split(' ');
+                string[] fSpawn = fishArray[5].Split(' ');
                 _spawnStart1 = Convert.ToInt32(fSpawn[0]);
                 _spawnStop1 = Convert.ToInt32(fSpawn[1]);
                 if(fSpawn.Length > 2)
@@ -257,7 +254,7 @@ namespace CustomFishing
                     _spawnStart2 = Convert.ToInt32(fSpawn[2]);
                     _spawnStop2 = Convert.ToInt32(fSpawn[3]);
                 }
-                var fSeasons = fishArray[6].Split(' ');
+                string[] fSeasons = fishArray[6].Split(' ');
 
             }
         }

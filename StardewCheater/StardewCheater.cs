@@ -47,22 +47,7 @@ namespace StardewCheater
             if (e.IsDown(SButton.NumPad6))
             {
                 GameLocation loc = Game1.currentLocation;
-
-                Buff buff = new(
-                    id: "Mizzion.StardewCheater/GetArtifacts",
-                    displayName: "Cheat Magnetic",
-                    iconTexture: this.Helper.ModContent.Load<Texture2D>("assets/bufficon.png"),
-                    iconSheetIndex: 0,
-                    duration: 10_000,
-                    effects: new StardewValley.Buffs.BuffEffects()
-                    {
-                        MagneticRadius = { 680 }
-                    }
-                );
-                Game1.player.applyBuff(buff);
-
-
-                //Game1.player.MagneticRadius = 650;
+                Game1.player.MagneticRadius = 650;
                 int curStam = Convert.ToInt32(Game1.player.Stamina);
 
                 if (loc == null)
@@ -81,7 +66,7 @@ namespace StardewCheater
                         Item i = obj.Value;
                         //loc.objects.Remove(obj.Value.TileLocation);
                         //Game1.createItemDebris(i, new Vector2(x, y), -1);
-                       obj.Value.performRemoveAction();
+                       obj.Value.performRemoveAction(obj.Value.TileLocation, loc);
                         
                     }
                     
@@ -90,7 +75,7 @@ namespace StardewCheater
 
                 foreach (var i in loc.resourceClumps)
                 {
-                    Monitor.Log($"Found Resource Clump: X: {i.Tile.X} Y: {i.Tile.Y}.");
+                    Monitor.Log($"Found Resource Clump: X: {i.tile.X} Y: {i.tile.Y}.");
                 }
                 /*
                 for (int xTile = 0; xTile < loc.Map.Layers[0].LayerWidth; ++xTile)
@@ -131,7 +116,7 @@ namespace StardewCheater
                 
                 if (b2 is Coop coop)
                 {
-                    Monitor.Log($"Found a {coop.GetIndoorsName()}");
+                    Monitor.Log($"Found a {coop.nameOfIndoors}");
                     coop.animalDoorOpen.Value = true;
                     
                     NetInt h = Helper.Reflection.GetField<NetInt>(coop, "yPositionOfAnimalDoor").GetValue();

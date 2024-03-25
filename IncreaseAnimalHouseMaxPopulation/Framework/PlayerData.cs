@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using StardewValley.Buildings;
 
 namespace IncreaseAnimalHouseMaxPopulation.Framework
 {

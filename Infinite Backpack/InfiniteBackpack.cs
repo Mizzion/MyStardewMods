@@ -55,18 +55,18 @@ namespace InfiniteBackpack
             }
             if (e.IsDown(SButton.MouseLeft) && Game1.activeClickableMenu is GameMenu)
             {
-                var tabs = Helper.Reflection.GetField<List<IClickableMenu>>(Game1.activeClickableMenu, "pages").GetValue();
-                var curTab = tabs[(Game1.activeClickableMenu as GameMenu).currentTab];
+                List<IClickableMenu> tabs = Helper.Reflection.GetField<List<IClickableMenu>>(Game1.activeClickableMenu, "pages").GetValue();
+                IClickableMenu curTab = tabs[(Game1.activeClickableMenu as GameMenu).currentTab];
 
 
-                var xval = curTab.xPositionOnScreen + curTab.width;
-                var yval = curTab.yPositionOnScreen + curTab.height;
+                int xval = curTab.xPositionOnScreen + curTab.width;
+                int yval = curTab.yPositionOnScreen + curTab.height;
                 if (e.Cursor.ScreenPixels.X > (xval - 100) && e.Cursor.ScreenPixels.X < (xval - 50) &&
                     e.Cursor.ScreenPixels.Y > (yval - 100) && e.Cursor.ScreenPixels.Y < (yval - 50))
                 {
                     //Game1.player.increaseBackpackSize(12);
-                    var yes = new Response("Yes", $"Buy tab # for  coins?");
-                    var no = new Response("No", "No thanks.");
+                    Response yes = new Response("Yes", $"Buy tab # for  coins?");
+                    Response no = new Response("No", "No thanks.");
                     Response[] responses = {yes, no};
                     Game1.currentLocation.createQuestionDialogue("Would you like to buy an extra inventory tab?", responses, "do_inv_increase");
                 }
@@ -91,23 +91,23 @@ namespace InfiniteBackpack
                 (Game1.activeClickableMenu is GameMenu || Game1.activeClickableMenu is ItemGrabMenu) &&
                 Game1.player.MaxItems >= 36)
             {
-                var f = 1.0f;
+                float f = 1.0f;
                 if (Game1.activeClickableMenu is GameMenu gm)
                 {
-                    var tabs = Helper.Reflection
+                    List<IClickableMenu> tabs = Helper.Reflection
                         .GetField<List<IClickableMenu>>(Game1.activeClickableMenu, "pages").GetValue();
-                    var curTab = tabs[((GameMenu) Game1.activeClickableMenu).currentTab];
+                    IClickableMenu curTab = tabs[((GameMenu) Game1.activeClickableMenu).currentTab];
 
                     if (curTab is InventoryPage inv)
                     {
                         f = Math.Min(0.1f + (Vector2.Distance(new Vector2(Game1.getMouseX(), Game1.getMouseY()), new Vector2(curTab.xPositionOnScreen + curTab.width - 100, curTab.yPositionOnScreen + curTab.height - 280)) / 200.0f), 1.0f);
                         //Lets try hovering stuff
-                        var xval = curTab.xPositionOnScreen + curTab.width;
-                        var yval = curTab.yPositionOnScreen + curTab.height;
+                        int xval = curTab.xPositionOnScreen + curTab.width;
+                        int yval = curTab.yPositionOnScreen + curTab.height;
                         if (Game1.getMouseX() > (xval - 100) && Game1.getMouseX() < (xval - 50) &&
                             Game1.getMouseY() > (yval - 100) && Game1.getMouseX() < (yval - 50))
                         {
-                            var c = Game1.activeClickableMenu;
+                            IClickableMenu c = Game1.activeClickableMenu;
                             var b = Game1.spriteBatch;
                             DrawSimpleTooltip(b, "Test", Game1.smallFont);
                             //c.drawHoverText(b, "Test Hover", Game1.smallFont, 0, 0, -1, (string)null, -1, (string[])null, (Item)null, 0, -1, -1, -1, -1, 0, (CraftingRecipe)null, (IList<Item>)null);
@@ -124,11 +124,11 @@ namespace InfiniteBackpack
         //Custom voids 
         private void DrawSimpleTooltip(SpriteBatch b, string hoverText, SpriteFont font)
         {
-            var textSize = font.MeasureString(hoverText);
-            var width = (int)textSize.X + this.backpack.Width + Game1.tileSize / 2;
-            var height = Math.Max(60, (int)textSize.Y + Game1.tileSize / 2);
-            var x = Game1.getOldMouseX() + Game1.tileSize / 2;
-            var y = Game1.getOldMouseY() + Game1.tileSize / 2;
+            Vector2 textSize = font.MeasureString(hoverText);
+            int width = (int)textSize.X + this.backpack.Width + Game1.tileSize / 2;
+            int height = Math.Max(60, (int)textSize.Y + Game1.tileSize / 2);
+            int x = Game1.getOldMouseX() + Game1.tileSize / 2;
+            int y = Game1.getOldMouseY() + Game1.tileSize / 2;
             if (x + width > Game1.viewport.Width)
             {
                 x = Game1.viewport.Width - width;
@@ -142,15 +142,15 @@ namespace InfiniteBackpack
             IClickableMenu.drawTextureBox(b, Game1.menuTexture, new Rectangle(0, 256, 60, 60), x, y, width, height, Color.White);
             if (hoverText.Length > 1)
             {
-                var tPosVector = new Vector2(x + (Game1.tileSize / 4), y + (Game1.tileSize / 4 + 4));
+                Vector2 tPosVector = new Vector2(x + (Game1.tileSize / 4), y + (Game1.tileSize / 4 + 4));
                 b.DrawString(font, hoverText, tPosVector + new Vector2(2f, 2f), Game1.textShadowColor, 0, Vector2.Zero, 1f, SpriteEffects.None, 0);
                 b.DrawString(font, hoverText, tPosVector + new Vector2(0f, 2f), Game1.textShadowColor, 0, Vector2.Zero, 1f, SpriteEffects.None, 0);
                 b.DrawString(font, hoverText, tPosVector + new Vector2(2f, 0f), Game1.textShadowColor, 0, Vector2.Zero, 1f, SpriteEffects.None, 0);
                 b.DrawString(font, hoverText, tPosVector, Game1.textColor * 0.9f, 0, Vector2.Zero, 1f, SpriteEffects.None, 0);
             }
-            var halfHeartSize = backpack.Width * 0.5f;
-            var sourceY =32;
-            var heartPos = new Vector2(x + textSize.X + halfHeartSize, y + halfHeartSize);
+            float halfHeartSize = backpack.Width * 0.5f;
+            int sourceY =32;
+            Vector2 heartPos = new Vector2(x + textSize.X + halfHeartSize, y + halfHeartSize);
             b.Draw(backpack, heartPos, new Rectangle(0, sourceY, 32, 32), Color.White);
         }
     }

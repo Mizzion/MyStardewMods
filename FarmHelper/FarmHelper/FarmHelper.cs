@@ -15,9 +15,12 @@ using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
 using xTile.Dimensions;
+using MyStardewMods.Common;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 using SFarmer = StardewValley.Farmer;
 using SObject = StardewValley.Object;
+using GenericModConfigMenu;
+using System.Globalization;
 
 namespace FarmHelper
 {
@@ -63,8 +66,9 @@ namespace FarmHelper
         //The location of the Chest if AddItemsToInventory == False
         private Vector2 _chestLocation;
 
-        //ModConfig
+        //Configs 
         private ModConfig _config;
+        private IGenericModConfigMenuApi _cfgMenu;
 
         //Total Times Action Performed.
         private int _count;
@@ -89,10 +93,131 @@ namespace FarmHelper
             //Events
             helper.Events.GameLoop.DayStarted += OnDayStarted;
             helper.Events.Input.ButtonPressed += OnButtonPressed;
+            helper.Events.GameLoop.GameLaunched += OnGameLaunched;
 
         }
 
         //Event Methods
+
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        {
+            #region Generic Moc Config Menu
+            _cfgMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (_cfgMenu is null) return;
+
+            //Register mod
+            _cfgMenu.Register(
+                mod: ModManifest,
+                reset: () => _config = new ModConfig(),
+                save: () => Helper.WriteConfig(_config)
+                );
+
+            _cfgMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: () => "Farm Helper Settings",
+                tooltip: null);
+            
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: ()=> _config.ModEnabled,
+                setValue: value => _config.ModEnabled = value,
+                name: () => "Enable Farm Helper",
+                tooltip: () => "Enable or Disable FarmHelper");
+
+            _cfgMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: () => "Basic Configurations",
+                tooltip: null);
+
+            #region "Basic Configuration"
+
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => _config.AutomaticMode,
+                setValue: value => _config.AutomaticMode = value,
+                name: () => "Automate Helper (Coming Soon)",
+                tooltip: () => "Whether or not the mod should automate helping.");
+
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => _config.EnablePetting,
+                setValue: value => _config.EnablePetting = value,
+                name: () => "Automate Petting",
+                tooltip: () => "Pets your pet and animals automatically.");
+
+            _cfgMenu.AddBoolOption(
+                mod: ModManifest,
+                getValue: () => _config.HarvestAnimalProducts,
+                setValue: value => _config.HarvestAnimalProducts = value,
+                name: () => "Harvest Animal Products",
+                tooltip: () => "Automatically harvest animal products");
+
+            #endregion
+
+            _cfgMenu.AddSectionTitle(
+                mod: ModManifest,
+                text: () => "Key Binds",
+                tooltip: null);
+
+            #region "Key Binds"
+
+
+            _cfgMenu.AddKeybind(
+                mod: ModManifest,
+                name: () => "Harvest Crop Key",
+                tooltip: () => "The key to activate harvesting crops.",
+                getValue: () => _config.ActivationKey,
+                setValue: value => _config.ActivationKey = value
+            );
+
+            _cfgMenu.AddKeybind(
+                mod: ModManifest,
+                name: () => "UseTool Key",
+                tooltip: () => "The key to Activate using tools. Spreads out an area from the player.",
+                getValue: () => _config.UseToolKey,
+                setValue: value => _config.UseToolKey = value
+            );
+
+            _cfgMenu.AddKeybind(
+                mod: ModManifest,
+                name: () => "Clear Location Key",
+                tooltip: () => "The key to clear the current location.",
+                getValue: () => _config.ClearLocationKey,
+                setValue: value => _config.ClearLocationKey = value
+            );
+
+            _cfgMenu.AddKeybind(
+                mod: ModManifest,
+                name: () => "Gather Forage Key",
+                tooltip: () => "The key to gather forage from your current location.",
+                getValue: () => _config.GatherForageKey,
+                setValue: value => _config.GatherForageKey = value
+            );
+
+            _cfgMenu.AddKeybind(
+                mod: ModManifest,
+                name: () => "Use Single Tool Key",
+                tooltip: () => "The key to use a tool on the current tile under the mouse pointer.",
+                getValue: () => _config.SingleUseKey,
+                setValue: value => _config.SingleUseKey = value
+            );
+            #endregion
+
+
+            /* 
+               
+              
+               public bool EnableNotification { get; set; } = true;
+               public bool EnableCost { get; set; } = true;
+               public int HelperCost { get; set; } = 50;
+               public bool AddItemsToInventory { get; set; } = true;
+               
+               public Vector2 ChestLocation { get; set; } = new Vector2(68, 12);
+             */
+
+            #endregion
+
+        }
 
         /// <summary>
         /// Event that runs when the day starts
@@ -120,7 +245,7 @@ namespace FarmHelper
                 return;
 
             //Check to see if Action Key was pressed
-            if(e.IsDown(_activationKey))
+            if(e.IsDown(_config.ActivationKey))
             {
                 //ProcessLiveStock();
                 HarvestCrops();
@@ -128,15 +253,18 @@ namespace FarmHelper
             }
                 
             //Check to see if Clear location key was pressed
-            if (e.IsDown(_clearLocationKey))
-                ClearCurrentLocation(Game1.currentLocation);
-            if (e.IsDown(_useToolKey))
+            if (e.IsDown(_config.ClearLocationKey))
             {
-                var cur = Helper.Input.GetCursorPosition();
-                UseTool(Game1.player.Tile, cur.Tile, Game1.currentLocation);
+                //ClearCurrentLocation(Game1.currentLocation);
             }
 
-            if (e.IsDown(_forageKey))
+            if (e.IsDown(_config.UseToolKey))
+            {
+                ICursorPosition cur = Helper.Input.GetCursorPosition();
+                UseTool(Game1.player.getTileLocation(), cur.Tile, Game1.currentLocation);
+            }
+
+            if (e.IsDown(_config.GatherForageKey))
             {
                 DoForageHarvest();
                 //Lets try to get the spawns
@@ -153,21 +281,21 @@ namespace FarmHelper
                     }
                 }
             }
-            if (e.IsDown(_singleKey))
+            if (e.IsDown(_config.SingleUseKey))
             {
-                var cur = Helper.Input.GetCursorPosition();
+                ICursorPosition cur = Helper.Input.GetCursorPosition();
                 SingleToolUse(cur.Tile, Game1.currentLocation);
             }
 
             if (e.IsDown(SButton.F3))
             {
-                var c = Helper.Input.GetCursorPosition();
+                ICursorPosition c = Helper.Input.GetCursorPosition();
                 Game1.player.position.Value  = c.Tile * Game1.tileSize;
             }
 
             if (e.IsDown(SButton.NumPad8))
             {
-                var loc = Game1.currentLocation;
+                GameLocation loc = Game1.currentLocation;
 
                 if (loc is MineShaft shaft && shaft.mineLevel > 120)
                 {
@@ -175,12 +303,18 @@ namespace FarmHelper
                 }
                 else if (loc is MineShaft shaft1)
                 {
-                    var curLev = (Game1.currentLocation as MineShaft)?.mineLevel ?? 0;
+                    int curLev = (Game1.currentLocation as MineShaft)?.mineLevel ?? 0;
                     Game1.enterMine(curLev + 1);
                 }
             }
             if(e.IsDown(SButton.NumPad9))
+            {
+                if (Game1.player.currentLocation.Name.Contains("Farm"))
+                    return;
+                ClearCurrentLocation(Game1.currentLocation);
                 ClearLocation(Game1.player.currentLocation);
+            }
+                
 
             
         }
@@ -193,6 +327,7 @@ namespace FarmHelper
         /// </summary>
         private void InitiliseConfig()
         {
+            /*
             if(!Enum.TryParse(_config.ActivationKey, true, out _activationKey))
             {
                 _activationKey = SButton.Q;
@@ -217,7 +352,7 @@ namespace FarmHelper
             {
                 _singleKey = SButton.V;
                 Monitor.Log("There was an error parsing the SingleUseKey. It was reset to V");
-            }
+            }*/
             _modEnabled = _config.ModEnabled;
             _automaticMode = _config.AutomaticMode;
             _enablePetting = _config.EnablePetting;
@@ -261,20 +396,20 @@ namespace FarmHelper
 
             //Player hasn't edited the config, we should try the chest.
             //Find chest on the map.
-            Game1.getFarm().objects.TryGetValue(_config.ChestLocation, out var _obj);
+            Game1.getFarm().objects.TryGetValue(_config.ChestLocation, out SObject _obj);
             
 
             if (_obj is Chest c)
             {
-                var item = c.addItem(obj);
+                Item item = c.addItem(obj);
                 if (item == null)
                     return true;
             }
             else
             {
-                var myChest = new Chest(true);
+                Chest myChest = new Chest(true);
                 Game1.getFarm().objects.Add(_config.ChestLocation, myChest);
-                var item = myChest.addItem(obj);
+                Item item = myChest.addItem(obj);
                 if (item == null)
                     return true;
             }
@@ -286,12 +421,12 @@ namespace FarmHelper
         {
             var player = Game1.player;
 
-            var fakeAxe = new Axe { UpgradeLevel = 4 };
-            var fakePick = new Pickaxe { UpgradeLevel = 4 };
-            var fakeSickle = new MeleeWeapon { UpgradeLevel = 4 };
-            var fakeHoe = new Hoe { UpgradeLevel = 4 };
-            var fakeCan = new WateringCan { UpgradeLevel = 4 };
-            var useAt = (new Vector2(pos.X, pos.Y) * Game1.tileSize) + new Vector2(Game1.tileSize / 2f);
+            Axe fakeAxe = new Axe { UpgradeLevel = 4 };
+            Pickaxe fakePick = new Pickaxe { UpgradeLevel = 4 };
+            MeleeWeapon fakeSickle = new MeleeWeapon { UpgradeLevel = 4 };
+            Hoe fakeHoe = new Hoe { UpgradeLevel = 4 };
+            WateringCan fakeCan = new WateringCan { UpgradeLevel = 4 };
+            Vector2 useAt = (new Vector2(pos.X, pos.Y) * Game1.tileSize) + new Vector2(Game1.tileSize / 2f);
             Game1.player.lastClick = useAt;
 
             loc.objects.TryGetValue(new Vector2(pos.X, pos.Y), out var obj);
@@ -300,7 +435,7 @@ namespace FarmHelper
             //Check obj
             if (obj != null)
             {
-                var forage = obj.IsSpawnedObject;//checkForAction(Game1.player);
+                bool forage = obj.IsSpawnedObject;//checkForAction(Game1.player);
                 if (forage)
                     DoForageHarvest(obj, loc, player);
                 if (obj.Name.ToLower().Contains("twig"))
@@ -318,7 +453,7 @@ namespace FarmHelper
 
                 if (ter is Grass)
                 {
-                    var rdn = new Random();
+                    Random rdn = new Random();
                     loc.terrainFeatures.Remove(new Vector2(pos.X, pos.Y));
                     Game1.createMultipleObjectDebris(178, (int)pos.X, (int)pos.Y, rdn.Next(2), loc);
                 }
@@ -329,9 +464,9 @@ namespace FarmHelper
                 if (dirt.crop == null &&
                     player.ActiveObject != null &&
                     ((player.ActiveObject.Category == SObject.SeedsCategory || player.ActiveObject.Category == -19) &&
-                     dirt.canPlantThisSeedHere(player.ActiveObject.ItemId, player.ActiveObject.Category == -19)))
+                     dirt.canPlantThisSeedHere(player.ActiveObject.ParentSheetIndex, (int)useAt.X, (int)useAt.Y, player.ActiveObject.Category == -19)))
                 {
-                    if ((dirt.plant(player.ActiveObject.ItemId, (int)useAt.X, (int)useAt.Y, player, player.ActiveObject.Category == -19, loc) && player.IsLocalPlayer))
+                    if ((dirt.plant(player.ActiveObject.ParentSheetIndex, (int)useAt.X, (int)useAt.Y, player, player.ActiveObject.Category == -19, loc) && player.IsLocalPlayer))
                         player.reduceActiveItemByOne();
                     Game1.haltAfterCheck = false;
                 }
@@ -343,7 +478,7 @@ namespace FarmHelper
                     }
                     else if (player.ActiveObject != null && player.ActiveObject.Category == -19)
                     {
-                        dirt.fertilizer.Value = player.ActiveObject.ItemId;
+                        dirt.fertilizer.Value = player.ActiveObject.ParentSheetIndex;
                         player.reduceActiveItemByOne();
                     }
                     else
@@ -357,34 +492,34 @@ namespace FarmHelper
 
 
             //Lets try bush shit
-            var rectangle = new Rectangle((int)useAt.X + 32, (int)useAt.Y - 32, 4, 192);
-            foreach (var largeTerrainFeature in loc.largeTerrainFeatures)
+            Rectangle rectangle = new Rectangle((int)useAt.X + 32, (int)useAt.Y - 32, 4, 192);
+            foreach (LargeTerrainFeature largeTerrainFeature in loc.largeTerrainFeatures)
             {
                 if (largeTerrainFeature is Bush bush && bush.getBoundingBox().Intersects(rectangle))
                 {
-                    bush.performUseAction(bush.Tile);
+                    bush.performUseAction(bush.tilePosition.Value, loc);
                 }
             }
             
-            Game1.player.Stamina = Game1.player.MaxStamina;//So we don't pass out lol
+            //Game1.player.Stamina = Game1.player.MaxStamina;//So we dont passout lol
         }
         private void UseTool(Vector2 startPos, Vector2 endPos, GameLocation loc)
         {
             var player = Game1.player;
 
-            var fakeAxe = new Axe { UpgradeLevel = 4 };
-            var fakePick = new Pickaxe { UpgradeLevel = 4 };
-            var fakeSickle = new MeleeWeapon { UpgradeLevel = 4 };
-            var fakeHoe = new Hoe { UpgradeLevel = 4 };
-            var fakeCan = new WateringCan { UpgradeLevel = 4 };
+            Axe fakeAxe = new Axe { UpgradeLevel = 4 };
+            Pickaxe fakePick = new Pickaxe { UpgradeLevel = 4 };
+            MeleeWeapon fakeSickle = new MeleeWeapon { UpgradeLevel = 4 };
+            Hoe fakeHoe = new Hoe { UpgradeLevel = 4 };
+            WateringCan fakeCan = new WateringCan { UpgradeLevel = 4 };
             Game1.player.MagneticRadius = 650;
 
-            for (var xTile = Convert.ToInt32(startPos.X); xTile <= Convert.ToInt32(endPos.X); ++xTile)
+            for (int xTile = Convert.ToInt32(startPos.X); xTile <= Convert.ToInt32(endPos.X); ++xTile)
             {
-                for (var yTile = Convert.ToInt32(startPos.Y); yTile <= Convert.ToInt32(endPos.Y); ++yTile)
+                for (int yTile = Convert.ToInt32(startPos.Y); yTile <= Convert.ToInt32(endPos.Y); ++yTile)
                 {
 
-                    var useAt = (new Vector2(xTile, yTile) * Game1.tileSize) + new Vector2(Game1.tileSize / 2f);
+                    Vector2 useAt = (new Vector2(xTile, yTile) * Game1.tileSize) + new Vector2(Game1.tileSize / 2f);
                     Game1.player.lastClick = useAt;
 
                     loc.objects.TryGetValue(new Vector2(xTile, yTile), out var obj);
@@ -393,7 +528,7 @@ namespace FarmHelper
                     //Check obj
                     if (obj != null)
                     {
-                        var forage = obj.IsSpawnedObject;//checkForAction(Game1.player);
+                        bool forage = obj.IsSpawnedObject;//checkForAction(Game1.player);
                         if (forage)
                             DoForageHarvest(obj, loc, player);
                         if (obj.Name.ToLower().Contains("twig"))
@@ -411,7 +546,7 @@ namespace FarmHelper
 
                         if (ter is Grass)
                         {
-                            var rdn = new Random();
+                            Random rdn = new Random();
                             loc.terrainFeatures.Remove(new Vector2(xTile, yTile));
                             Game1.createMultipleObjectDebris(178, xTile, yTile, rdn.Next(2), loc);
                         }
@@ -450,8 +585,8 @@ namespace FarmHelper
 
 
                     //Lets try bush shit
-                    var rectangle = new Rectangle((int)useAt.X + 32, (int)useAt.Y - 32, 4, 192);
-                    foreach (var largeTerrainFeature in loc.largeTerrainFeatures)
+                    Rectangle rectangle = new Rectangle((int)useAt.X + 32, (int)useAt.Y - 32, 4, 192);
+                    foreach (LargeTerrainFeature largeTerrainFeature in loc.largeTerrainFeatures)
                     {
                         if (largeTerrainFeature is Bush bush && bush.getBoundingBox().Intersects(rectangle))
                         {
@@ -460,7 +595,7 @@ namespace FarmHelper
                     }
 
                     //Resource Clumps
-                    var clump = GetResourceClumpCoveringTile(loc, new Vector2(useAt.X, useAt.Y));
+                    ResourceClump clump = GetResourceClumpCoveringTile(loc, new Vector2(useAt.X, useAt.Y));
                     if(clump != null)
                     {
                         if (clump.parentSheetIndex.Value == 600)
@@ -486,21 +621,61 @@ namespace FarmHelper
                 }
             }
         }
+
+        private void GetObjects(GameLocation loc)
+        {
+            string foundObjects = "Found Objects: ";
+            string foundTerrain = "Found Terrain: ";
+            string terrain = "";
+            string forage = "";
+            string foundForage = "Found Forage: ";
+            int objNum = 0, terNum = 0, forNum = 0;
+            //Objects.
+            foreach (var obj in loc.objects.Pairs.ToList())
+            {
+                foundObjects += $" {obj.Value.Name} X:{obj.Key.X.ToString(CultureInfo.InvariantCulture)} Y: {obj.Key.Y.ToString(CultureInfo.InvariantCulture)}in Map: {loc.Name}.";
+                objNum++;
+            }
+
+
+            //TerrainFeatures
+            foreach (var ter in loc.terrainFeatures.Pairs.ToList())
+            {
+                if (ter.Value is Grass)
+                    terrain = "Grass";
+                if (ter.Value is Tree tree)
+                    terrain = "Tree(More Coming Soon)";
+                foundTerrain += $" {terrain} X:{ter.Key.X.ToString(CultureInfo.InvariantCulture)} Y: {ter.Key.Y.ToString(CultureInfo.InvariantCulture)}in Map: {loc.Name}.";
+                terNum++;
+            }
+
+            //Resource Clumps
+            /*
+            foreach (var fora in loc.)
+            {
+                
+            }*/
+
+            //Spit out the totals.
+            Monitor.Log($"Objects ({objNum}): {foundObjects}");
+            Monitor.Log($"Terrain Feature {terNum} {foundTerrain}");
+        }
+
         /// <summary>
         /// Checks and pets the players Dog/Cat
         /// </summary>
         private void CheckDogCat()
         {
-            var pFarm = Game1.getFarm();
-            var player = Game1.player;
+            Farm pFarm = Game1.getFarm();
+            SFarmer player = Game1.player;
 
             if (!player.hasPet()) return;
 
-            foreach (var character in Game1.getFarm().characters)
+            foreach (NPC character in Game1.getFarm().characters)
                 if (character is Pet pet)
                     PetPet(pet);
 
-            foreach (var character in Utility.getHomeOfFarmer(player).characters)
+            foreach (NPC character in Utility.getHomeOfFarmer(player).characters)
                 if (character is Pet pet)
                     PetPet(pet);
             pFarm.petBowlWatered.Value = true;
@@ -509,27 +684,27 @@ namespace FarmHelper
         
         private void ClearCurrentLocation(GameLocation loc)
         {
-            var fakeAxe = new Axe { UpgradeLevel = 4 };
-            var fakePick = new Pickaxe { UpgradeLevel = 4 };
+            Axe fakeAxe = new Axe { UpgradeLevel = 4 };
+            Pickaxe fakePick = new Pickaxe { UpgradeLevel = 4 };
             Game1.player.MagneticRadius = 650;
-            var curStam = Convert.ToInt32(Game1.player.Stamina);
-            var rc = new List<ResourceClump>();
+            int curStam = Convert.ToInt32(Game1.player.Stamina);
+            List<ResourceClump> rc = new List<ResourceClump>();
             rc.Clear();
-            var objects = new List<Vector2>();
+            List<Vector2> objects = new List<Vector2>();
             objects.Clear();
 
-            for (var xTile = 0; xTile < loc.Map.Layers[0].LayerWidth; ++xTile)
+            for (int xTile = 0; xTile < loc.Map.Layers[0].LayerWidth; ++xTile)
             {
-                for (var yTile = 0; yTile < loc.Map.Layers[0].LayerHeight; ++yTile)
+                for (int yTile = 0; yTile < loc.Map.Layers[0].LayerHeight; ++yTile)
                 {
                     
                     loc.objects.TryGetValue(new Vector2(xTile, yTile), out var obj);
                     loc.terrainFeatures.TryGetValue(new Vector2(xTile, yTile), out var ter);
-                    var who = Game1.player;
-                    var useAt = (new Vector2(xTile, yTile) * Game1.tileSize) + new Vector2(Game1.tileSize / 2f);
+                    SFarmer who = Game1.player;
+                    Vector2 useAt = (new Vector2(xTile, yTile) * Game1.tileSize) + new Vector2(Game1.tileSize / 2f);
                     if (obj != null)
                     {
-                        var forage = obj.IsSpawnedObject;//checkForAction(Game1.player);
+                        bool forage = obj.IsSpawnedObject;//checkForAction(Game1.player);
                         if (forage)
                             DoForageHarvest(obj, loc, who);
                         if (obj.Name.ToLower().Contains("twig"))
@@ -554,7 +729,7 @@ namespace FarmHelper
 
                         if (ter is Grass)
                         {
-                            var rdn = new Random();
+                            Random rdn = new Random();
                             loc.terrainFeatures.Remove(new Vector2(xTile, yTile));
                             Game1.createMultipleObjectDebris(178, xTile, yTile, rdn.Next(2), loc);
                         }
@@ -570,8 +745,8 @@ namespace FarmHelper
 
                     //Lets try bush shit
 
-                    var rectangle = new Rectangle((int)useAt.X + 32, (int)useAt.Y - 32, 4, 192);
-                    foreach (var largeTerrainFeature in loc.largeTerrainFeatures)
+                    Rectangle rectangle = new Rectangle((int)useAt.X + 32, (int)useAt.Y - 32, 4, 192);
+                    foreach (LargeTerrainFeature largeTerrainFeature in loc.largeTerrainFeatures)
                     {
                         if (largeTerrainFeature is Bush bush && bush.getBoundingBox().Intersects(rectangle))
                         {
@@ -581,7 +756,7 @@ namespace FarmHelper
 
 
                     //Try to do monsters
-                    var rect = new Rectangle((int)useAt.X, (int)useAt.Y, 4, 4);
+                    Rectangle rect = new Rectangle((int)useAt.X, (int)useAt.Y, 4, 4);
                     loc.damageMonster(rect, 1000, 1000, false, Game1.player);
                     
                     //Lets destory us some Resource Clumps
@@ -628,17 +803,17 @@ namespace FarmHelper
 
         private void ClearLocation(GameLocation loc)
         {
-            var fakeAxe = new Axe { UpgradeLevel = 4 };
-            var fakePick = new Pickaxe { UpgradeLevel = 4 };
+            Axe fakeAxe = new Axe { UpgradeLevel = 4 };
+            Pickaxe fakePick = new Pickaxe { UpgradeLevel = 4 };
             Game1.player.MagneticRadius = 650;
-            var curStam = Convert.ToInt32(Game1.player.Stamina);
-            var rc = new List<ResourceClump>();
+            int curStam = Convert.ToInt32(Game1.player.Stamina);
+            List<ResourceClump> rc = new List<ResourceClump>();
             rc.Clear();
-            var objects = new List<Vector2>();
+            List<Vector2> objects = new List<Vector2>();
             objects.Clear();
-            var characters = new List<NPC>();
+            List<NPC> characters = new List<NPC>();
             characters.Clear();
-            var useAt = new Vector2();
+            Vector2 useAt = new Vector2();
             characters = loc.characters.ToList();
             foreach (var mon1 in characters)
             {
@@ -659,17 +834,17 @@ namespace FarmHelper
         /// </summary>
         private void GatherProducts()
         {
-            var farm = Game1.getFarm();
-            var who = Game1.player;
-            var produceLoc = new List<Vector2>();
+            Farm farm = Game1.getFarm();
+            SFarmer who = Game1.player;
+            List<Vector2> produceLoc = new List<Vector2>();
             //Scan Coops
-            foreach (var building in farm.buildings)
+            foreach (Building building in farm.buildings)
             {
                 if (building is Coop)
                 {
                     foreach (var produce in building.indoors.Value.objects.Pairs)
                     {
-                        var obj = produce.Value;
+                        SObject obj = produce.Value;
 
                         if (obj.isAnimalProduct() || obj.ParentSheetIndex == 107)
                         {
@@ -695,7 +870,7 @@ namespace FarmHelper
             {
                 if (obj.Value.Name.Contains("Truffle"))
                 {
-                    var doubleChance = Game1.random.NextDouble() < 0.2;
+                    bool doubleChance = Game1.random.NextDouble() < 0.2;
 
 
                     obj.Value.Quality = who.professions.Contains(16) ? 4 : obj.Value.Quality;
@@ -707,7 +882,7 @@ namespace FarmHelper
                     if (GiveItemToPlayer(obj.Value, who))
                     {
                         produceLoc.Add(obj.Key);
-                        var amt = obj.Value.Stack > 1 ? 14 : 7;
+                        int amt = obj.Value.Stack > 1 ? 14 : 7;
 
                         who.gainExperience(2, amt);
                     }
@@ -724,10 +899,10 @@ namespace FarmHelper
 
         private void HarvestCrops()
         {
-            var who = Game1.player;
+            SFarmer who = Game1.player;
             _locations = GetAllLocations().ToArray();
 
-            foreach (var loc in _locations)
+            foreach (GameLocation loc in _locations)
             {
                 if (loc.Name.Contains("FarmExpan") || loc.Name.Contains("Greenhouse") || loc.IsFarm)
                 {
@@ -737,16 +912,16 @@ namespace FarmHelper
                         {
                             if (dirt.crop != null)
                             {
-                                var crop = dirt.crop;
+                                Crop crop = dirt.crop;
                                 if (crop.currentPhase.Value >= crop.phaseDays.Count - 1 && (!crop.fullyGrown.Value || crop.dayOfCurrentPhase.Value <= 0))
                                 {
-                                    var i = HarvestedCrop(dirt, crop, (int)pair.Key.X, (int)pair.Key.Y);
+                                    SObject i = HarvestedCrop(dirt, crop, (int)pair.Key.X, (int)pair.Key.Y);
                                     var harvest = GiveItemToPlayer(i, who);
                                     if(_debugging)
-                                        Monitor.Log($"Passed Checks and on my way to harvesting, Harvest: {harvest.ToString()} Item: {i.Name}", LogLevel.Alert);
+                                        Monitor.Log($"Passed Checks and on my way to harvesting, Harvest: {harvest.ToString()} Item: {i.Name} Regrow After Harvest: {crop.regrowAfterHarvest.Value}, Current Phase Day: {crop.dayOfCurrentPhase.Value}, Current Phase: {crop.currentPhase.Value} of Max: {crop.phaseDays.Count - 1}", LogLevel.Alert);
                                     if (harvest)
                                     {
-                                        var placeHolder = 0;
+                                        int placeHolder = 0;
                                         if (placeHolder == 1)
                                         {
                                             //Will be to sale
@@ -754,7 +929,17 @@ namespace FarmHelper
                                         else
                                         {
                                             if (crop.regrowAfterHarvest.Value != -1)
+                                            {
                                                 crop.dayOfCurrentPhase.Value = crop.regrowAfterHarvest.Value;
+                                                crop.fullyGrown.Value = true;
+                                                if (_debugging)
+                                                {
+                                                    Monitor.Log($"Passed the regrowAfterHarvest check. ", LogLevel.Warn);
+                                                    Monitor.Log($"Passed Checks and on my way to harvesting, Harvest: {harvest.ToString()} Item: {i.Name} Regrow After Harvest: {crop.regrowAfterHarvest.Value}, Current Phase Day: {crop.dayOfCurrentPhase.Value}, Current Phase: {crop.currentPhase.Value} of Max: {crop.phaseDays.Count - 1}", LogLevel.Error);
+                                                }
+
+                                                
+                                            }                                                
                                             else
                                                 dirt.destroyCrop(pair.Key, false, loc);
                                             if (crop.dead.Value)
@@ -762,7 +947,7 @@ namespace FarmHelper
                                                 dirt.destroyCrop(pair.Key, false, loc);
                                             }
                                         }
-                                        var exp = (float)(16.0 * Math.Log(0.018 * Convert.ToInt32(Game1.objectInformation[crop.indexOfHarvest.Value].Split('/')[1]) + 1.0, Math.E));
+                                        float exp = (float)(16.0 * Math.Log(0.018 * Convert.ToInt32(Game1.objectInformation[crop.indexOfHarvest.Value].Split('/')[1]) + 1.0, Math.E));
                                         who.gainExperience(0, (int)Math.Round(exp));
                                         _count++;
                                     }
@@ -773,6 +958,8 @@ namespace FarmHelper
                 }
             }
         }
+       
+        
         /// <summary>
         /// Gets the Harvested Crop
         /// </summary>
@@ -783,12 +970,12 @@ namespace FarmHelper
         /// <returns></returns>
         private SObject HarvestedCrop(HoeDirt dirt, Crop crop, int x, int y)
         {
-            var player = Game1.player;
-            var stack = 1;
-            var iQuality = 0;
-            var fBuff = 0;
+            SFarmer player = Game1.player;
+            int stack = 1;
+            int iQuality = 0;
+            int fBuff = 0;
             //Random rnd = new Random(x * 7 + y + 11 + (int)Game1.stats.DaysPlayed + (int)Game1.uniqueIDForThisGame);
-            var rnd = new Random(x * 7 + y * 11 + (int)Game1.stats.DaysPlayed + (int)Game1.uniqueIDForThisGame);
+            Random rnd = new Random(x * 7 + y * 11 + (int)Game1.stats.DaysPlayed + (int)Game1.uniqueIDForThisGame);
 
 
             switch (dirt.fertilizer.Value)
@@ -803,8 +990,8 @@ namespace FarmHelper
                     fBuff = 3;
                     break;
             }
-            var chanceForGoldQuality = 0.2 * ((double)Game1.player.FarmingLevel / 10.0) + 0.2 * (double)fBuff * (((double)Game1.player.FarmingLevel + 2.0) / 12.0) + 0.01;
-            var chanceForSilverQuality = Math.Min(0.75, chanceForGoldQuality * 2.0);
+            double chanceForGoldQuality = 0.2 * ((double)Game1.player.FarmingLevel / 10.0) + 0.2 * (double)fBuff * (((double)Game1.player.FarmingLevel + 2.0) / 12.0) + 0.01;
+            double chanceForSilverQuality = Math.Min(0.75, chanceForGoldQuality * 2.0);
             if (fBuff >= 3 && rnd.NextDouble() < chanceForGoldQuality / 2.0)
             {
                 iQuality = 4;
@@ -818,7 +1005,7 @@ namespace FarmHelper
                 iQuality = 1;
             }
 
-            var qMod = 0.2 * (player.FarmingLevel / 10.0) + 0.2 * fBuff * ((player.FarmingLevel + 2) / 12.0) + 0.01;
+            double qMod = 0.2 * (player.FarmingLevel / 10.0) + 0.2 * fBuff * ((player.FarmingLevel + 2) / 12.0) + 0.01;
             //double qModifier = Math.Min(0.75, qMod * 2.0);
            /* if (rnd.NextDouble() < qMod)
                 iQuality = 1;*/
@@ -852,13 +1039,13 @@ namespace FarmHelper
         {
             //Lets try bush shit
 
-            for (var xTile = 0; xTile < loc.Map.Layers[0].LayerWidth; ++xTile)
+            for (int xTile = 0; xTile < loc.Map.Layers[0].LayerWidth; ++xTile)
             {
-                for (var yTile = 0; yTile < loc.Map.Layers[0].LayerHeight; ++yTile)
+                for (int yTile = 0; yTile < loc.Map.Layers[0].LayerHeight; ++yTile)
                 {
-                    var useAt = (new Vector2(xTile, yTile) * Game1.tileSize) + new Vector2(Game1.tileSize / 2f);
-                    var rectangle = new Rectangle((int)useAt.X + 32, (int)useAt.Y - 32, 4, 192);
-                    foreach (var largeTerrainFeature in loc.largeTerrainFeatures)
+                    Vector2 useAt = (new Vector2(xTile, yTile) * Game1.tileSize) + new Vector2(Game1.tileSize / 2f);
+                    Rectangle rectangle = new Rectangle((int)useAt.X + 32, (int)useAt.Y - 32, 4, 192);
+                    foreach (LargeTerrainFeature largeTerrainFeature in loc.largeTerrainFeatures)
                     {
                         if (largeTerrainFeature is Bush bush && bush.getBoundingBox().Intersects(rectangle))
                         {
@@ -913,20 +1100,20 @@ namespace FarmHelper
         /// </summary>
         private void DoForageHarvest()
         {
-            var loc = Game1.currentLocation;
+            GameLocation loc = Game1.currentLocation;
             Game1.player.MagneticRadius = 650;
-            var curStam = Convert.ToInt32(Game1.player.Stamina);
-            for (var xTile = 0; xTile < loc.Map.Layers[0].LayerWidth; ++xTile)
+            int curStam = Convert.ToInt32(Game1.player.Stamina);
+            for (int xTile = 0; xTile < loc.Map.Layers[0].LayerWidth; ++xTile)
             {
-                for (var yTile = 0; yTile < loc.Map.Layers[0].LayerHeight; ++yTile)
+                for (int yTile = 0; yTile < loc.Map.Layers[0].LayerHeight; ++yTile)
                 {
                     loc.objects.TryGetValue(new Vector2(xTile, yTile), out var obj);
                     loc.terrainFeatures.TryGetValue(new Vector2(xTile, yTile), out var ter);
-                    var who = Game1.player;
-                    var useAt = (new Vector2(xTile, yTile) * Game1.tileSize) + new Vector2(Game1.tileSize / 2f);
+                    SFarmer who = Game1.player;
+                    Vector2 useAt = (new Vector2(xTile, yTile) * Game1.tileSize) + new Vector2(Game1.tileSize / 2f);
                     if (obj != null)
                     {
-                        var forage = obj.IsSpawnedObject; //checkForAction(Game1.player);
+                        bool forage = obj.IsSpawnedObject; //checkForAction(Game1.player);
                         if (forage)
                             DoForageHarvest(obj, loc, who);
                     }
@@ -941,7 +1128,7 @@ namespace FarmHelper
         /// </summary>
         private void ProcessLiveStock()
         {
-            var who = Game1.player;
+            SFarmer who = Game1.player;
             _count = 0;
             foreach (var animal in GetLivestock())
             {
@@ -956,7 +1143,7 @@ namespace FarmHelper
 
                     if (animal.currentProduce.Value > 0 && _harvestProduct)
                     {
-                        var obj = new SObject(animal.currentProduce.Value, 1, false, -1, animal.produceQuality.Value);
+                        SObject obj = new SObject(animal.currentProduce.Value, 1, false, -1, animal.produceQuality.Value);
                         animal.currentProduce.Value = 0;
                         GiveItemToPlayer(obj, who);
                         _count++;
@@ -984,10 +1171,10 @@ namespace FarmHelper
         /// <returns></returns>
         private List<FarmAnimal> GetLivestock()
         {
-            var farm = Game1.getFarm();
-            var animals = farm.getAllFarmAnimals().ToList();
+            Farm farm = Game1.getFarm();
+            List<FarmAnimal> animals = farm.getAllFarmAnimals().ToList();
 
-            foreach(var building in farm.buildings)
+            foreach(Building building in farm.buildings)
                 if(building.indoors.Value != null && building.indoors.Value.GetType() == typeof(AnimalHouse))
                     animals.AddRange(((AnimalHouse)building.indoors.Value).animals.Values.ToList());
             return animals;
@@ -1007,9 +1194,9 @@ namespace FarmHelper
                     select building.indoors.Value
                 );*/
 
-            var mainLocations = (Context.IsMainPlayer ? Game1.locations : this.Helper.Multiplayer.GetActiveLocations()).ToArray();
+            GameLocation[] mainLocations = (Context.IsMainPlayer ? Game1.locations : this.Helper.Multiplayer.GetActiveLocations()).ToArray();
 
-            foreach (var location in mainLocations.Concat(MineShaft.activeMines).Concat(VolcanoDungeon.activeLevels))
+            foreach (GameLocation location in mainLocations.Concat(MineShaft.activeMines).Concat(VolcanoDungeon.activeLevels))
             {
                 yield return location;
 
@@ -1026,7 +1213,7 @@ namespace FarmHelper
 
         protected Rectangle GetAbsoluteTileArea(Vector2 tile)
         {
-            var pos = tile * Game1.tileSize;
+            Vector2 pos = tile * Game1.tileSize;
             return new Rectangle((int)pos.X, (int)pos.Y, Game1.tileSize, Game1.tileSize);
         }
         
@@ -1065,8 +1252,8 @@ namespace FarmHelper
         /// <param name="tile">The tile to check.</param>
         protected ResourceClump GetResourceClumpCoveringTile(GameLocation location, Vector2 tile)
         {
-            var tileArea = this.GetAbsoluteTileArea(tile);
-            foreach (var clump in this.GetResourceClumps(location))
+            Rectangle tileArea = this.GetAbsoluteTileArea(tile);
+            foreach (ResourceClump clump in this.GetResourceClumps(location))
             {
                 if (clump.getBoundingBox(clump.tile.Value).Intersects(tileArea))
                     return clump;

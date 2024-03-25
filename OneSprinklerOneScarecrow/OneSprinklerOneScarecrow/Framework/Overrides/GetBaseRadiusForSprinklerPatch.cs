@@ -16,14 +16,11 @@ namespace OneSprinklerOneScarecrow.Framework.Overrides
         {
             _monitor = monitor;
         }
-
-        
         public static bool Prefix(ref Object __instance, ref int __result)
         {
-            
             __result = -1;
-           /*
-            foreach (var obj in __instance.objects.Pairs)
+            /*
+            foreach (var obj in __instance.Objects.Pairs)
             {
                 if (obj.Value.Name == "Haxarecrow")
                 {
@@ -34,28 +31,28 @@ namespace OneSprinklerOneScarecrow.Framework.Overrides
             }
 
             return true;*/
-            
-            if (__instance.QualifiedItemId == "(O)599")
+
+            if (Utility.IsNormalObjectAtParentSheetIndex(__instance, 599))
             {
                 __result = 0;
             }
-            if (__instance.QualifiedItemId == "(O)621")
+            if (Utility.IsNormalObjectAtParentSheetIndex(__instance, 621))
             {
                 __result = 1;
             }
-            if (__instance.QualifiedItemId == "(O)645")
+            if (Utility.IsNormalObjectAtParentSheetIndex(__instance, 645))
             {
                 __result = 2;
             }
 
-            if (__instance.QualifiedItemId == $"(O){HaxorSprinkler.ItemID}")
-            {                
+            if (__instance.Name.Contains("Haxor Sprinkler"))
+            {
                 __result = 999;
             }
             __result = __result >= 0 ? __result : -1;
 
             return __result <= 0;
-            
+
         }
     }
 }
