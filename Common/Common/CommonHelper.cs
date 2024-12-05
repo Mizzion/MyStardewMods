@@ -1,13 +1,23 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MyStardewMods.Common.UI;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Inventories;
 using StardewValley.Locations;
 using StardewValley.Menus;
+using StardewValley.Objects;
+using StardewValley.TerrainFeatures;
+using StardewValley.Tools;
+using xTile.Dimensions;
+using Rectangle = Microsoft.Xna.Framework.Rectangle;
+using SFarmer = StardewValley.Farmer;
+using SObject = StardewValley.Object;
 
 namespace MyStardewMods.Common
 {
@@ -39,6 +49,11 @@ namespace MyStardewMods.Common
         /// <summary>The width of the horizontal and vertical scroll edges (between the origin position and start of content padding).</summary>
         public static readonly Vector2 ScrollEdgeSize = new Vector2(CommonSprites.Scroll.TopLeft.Width * Game1.pixelZoom, CommonSprites.Scroll.TopLeft.Height * Game1.pixelZoom);
 
+        private static readonly IDictionary<int, int> ResourceUpgradeLevelsNeeded = new Dictionary<int, int>
+        {
+            [ResourceClump.meteoriteIndex] = Tool.gold,
+            [ResourceClump.boulderIndex] = Tool.steel
+        };
 
         /*********
         ** Public methods
@@ -61,6 +76,27 @@ namespace MyStardewMods.Common
                 locations = locations.Concat(MineShaft.activeMines).Concat(VolcanoDungeon.activeLevels);
 
             return locations;
+        }
+
+        /// <summary>Get a player's current tile position.</summary>
+        /// <param name="player">The player to check.</param>
+        public static Vector2 GetPlayerTile(Farmer? player)
+        {
+            Vector2 position = player?.Position ?? Vector2.Zero;
+            return new Vector2((int)(position.X / Game1.tileSize), (int)(position.Y / Game1.tileSize)); // note: player.getTileLocationPoint() isn't reliable in many cases, e.g. right after a warp when riding a horse
+        }
+
+        /// <summary>Get whether an item ID is non-empty, ignoring placeholder values like "-1".</summary>
+        /// <param name="itemId">The unqualified item ID to check.</param>
+        /// <param name="allowZero">Whether to allow zero as a valid ID.</param>
+        public static bool IsItemId(string itemId, bool allowZero = true)
+        {
+            return
+                !string.IsNullOrWhiteSpace(itemId)
+                && (
+                    !int.TryParse(itemId, out int id)
+                    || id >= (allowZero ? 0 : 1)
+                );
         }
 
         /****
@@ -349,9 +385,9 @@ namespace MyStardewMods.Common
         /// <param name="verb">The verb describing where the error occurred (e.g. "looking that up"). This is displayed on the screen, so it should be simple and avoid characters that might not be available in the sprite font.</param>
         /// <param name="action">The action to invoke.</param>
         /// <param name="onError">A callback invoked if an error is intercepted.</param>
-        public static void InterceptErrors(this IMonitor monitor, string verb, Action action, Action<Exception> onError = null)
+        public static void InterceptErrors(this IMonitor monitor, string verb, Action action, Action<Exception> onError = null!)
         {
-            monitor.InterceptErrors(verb, null, action, onError);
+            monitor.InterceptErrors(verb, null!, action, onError);
         }
 
         /// <summary>Intercept errors thrown by the action.</summary>
@@ -360,7 +396,7 @@ namespace MyStardewMods.Common
         /// <param name="detailedVerb">A more detailed form of <see cref="verb"/> if applicable. This is displayed in the log, so it can be more technical and isn't constrained by the sprite font.</param>
         /// <param name="action">The action to invoke.</param>
         /// <param name="onError">A callback invoked if an error is intercepted.</param>
-        public static void InterceptErrors(this IMonitor monitor, string verb, string detailedVerb, Action action, Action<Exception> onError = null)
+        public static void InterceptErrors(this IMonitor monitor, string verb, string detailedVerb, Action action, Action<Exception> onError = null!)
         {
             try
             {
@@ -378,11 +414,332 @@ namespace MyStardewMods.Common
         /// <param name="ex">The exception to handle.</param>
         /// <param name="verb">The verb describing where the error occurred (e.g. "looking that up"). This is displayed on the screen, so it should be simple and avoid characters that might not be available in the sprite font.</param>
         /// <param name="detailedVerb">A more detailed form of <see cref="verb"/> if applicable. This is displayed in the log, so it can be more technical and isn't constrained by the sprite font.</param>
-        public static void InterceptError(this IMonitor monitor, Exception ex, string verb, string detailedVerb = null)
+        public static void InterceptError(this IMonitor monitor, Exception ex, string verb, string detailedVerb = null!)
         {
             detailedVerb = detailedVerb ?? verb;
             monitor.Log($"Something went wrong {detailedVerb}:\n{ex}", LogLevel.Error);
             ShowErrorMessage($"Huh. Something went wrong {verb}. The error log has the technical details.");
+        }
+        
+
+        public static IEnumerable<GameLocation> GetLocations(IModHelper helper)
+        {
+            GameLocation[] locs = (Context.IsMainPlayer ? Game1.locations : helper.Multiplayer.GetActiveLocations()).ToArray();
+
+            foreach(GameLocation location in locs.Concat(MineShaft.activeMines).Concat(VolcanoDungeon.activeLevels))
+            {
+                yield return location;
+
+                foreach (GameLocation indoors in location.GetInstancedBuildingInteriors())
+                    yield return indoors;
+            }
+        }
+
+
+        public static void DrawAffectedArea(SpriteBatch batch, IModHelper? Helper, int distance = 0, bool PlayerOrMouse = false)
+        {
+            var ShowFromMouse = !PlayerOrMouse && Helper != null ? Helper.Input.GetCursorPosition().Tile : Game1.player.Tile;
+            foreach(Vector2 tile in GetAffectedTile(ShowFromMouse, distance))
+            {
+                Rectangle area = new((int)(tile.X * Game1.tileSize - Game1.viewport.X), (int)(tile.Y * Game1.tileSize - Game1.viewport.Y), Game1.tileSize, Game1.tileSize);
+
+                Color color = Color.Green;
+
+                batch.DrawLine(area.X, area.Y, new Vector2(area.Width, area.Height), color * 0.2f);
+
+                int borderSize = 1;
+                Color borderColor = color * 0.5f;
+                batch.DrawLine(area.X, area.Y, new Vector2(area.Width, borderSize), borderColor); // top
+                batch.DrawLine(area.X, area.Y, new Vector2(borderSize, area.Height), borderColor); // left
+                batch.DrawLine(area.X + area.Width, area.Y, new Vector2(borderSize, area.Height), borderColor); // right
+                batch.DrawLine(area.X, area.Y + area.Height, new Vector2(area.Width, borderSize), borderColor); // bottom
+
+            }
+        }
+
+        public static bool TryGetEnricher(GameLocation location, Vector2 tile, [NotNullWhen(true)] out Chest? enricher,
+            [NotNullWhen(true)] out Item? fertilizer)
+        {
+            (Chest enricher, Item fertilizer)? entry = GetEnricher(location, tile);
+            fertilizer = entry?.fertilizer;
+            enricher = entry?.enricher;
+            return entry != null;
+        }
+
+        private static (Chest enricher, Item fertilizer)? GetEnricher(GameLocation location, Vector2 tile)
+        {
+            foreach (SObject sprinkler in location.Objects.Values)
+            {
+                if (sprinkler.IsSprinkler() &&
+                    sprinkler.heldObject.Value is { QualifiedItemId: "(O)913" } enricherObj &&
+                    enricherObj.heldObject.Value is Chest enricher && sprinkler.IsInSprinklerRangeBroadphase(tile) &&
+                    sprinkler.GetSprinklerTiles().Contains(tile) && enricher.Items.FirstOrDefault() is
+                        { Category: SObject.fertilizerCategory } fertilizer)
+                {
+                    return (enricher, fertilizer);
+                }
+            }
+
+            return null;
+        }
+
+        public static IEnumerable<Vector2> GetAffectedTile(Vector2 origin, int distance)
+        {
+            for (int x = -distance; x <= distance; x++)
+            {
+                for (int y = -distance; y <= distance; y++)
+                {
+                    yield return new Vector2(origin.X + x, origin.Y + y);
+                }
+            }
+        }
+
+        public static void GetRadialAdjacentTile(Vector2 origin, Vector2 tile, out Vector2 adjacent, out int facingDirection)
+        {
+            facingDirection = Utility.getDirectionFromChange(tile, origin);
+            adjacent = facingDirection switch
+            {
+                Game1.up => new Vector2(tile.X, tile.Y + 1),
+                Game1.down => new Vector2(tile.X, tile.Y -1),
+                Game1.left => new Vector2(tile.X + 1, tile.Y),
+                Game1.right => new Vector2(tile.X - 1, tile.Y),
+                _ => tile
+            };
+        }
+
+        public static Rectangle GetAbsoluteTileArea(Vector2 tile)
+        {
+            Vector2 position = tile * Game1.tileSize;
+            return new Rectangle((int)position.X, (int)position.Y, Game1.tileSize, Game1.tileSize);
+        }
+
+        public static bool UseTool(Tool tool, Vector2 tile, Farmer player, GameLocation location)
+        {
+            UpdateToolBeforeUse(tool, tile, player);
+            tool.swingTicker++;
+            tool.DoFunction(location, (int)player.lastClick.X, (int)player.lastClick.Y, 0, player);
+            return true;
+        }
+
+        public static bool UseWeapon(MeleeWeapon weapon, Vector2 tile, Farmer player, GameLocation location)
+        {
+            bool atk = location.damageMonster(
+                areaOfEffect: GetAbsoluteTileArea(tile),
+                minDamage: weapon.minDamage.Value,
+                maxDamage: weapon.maxDamage.Value,
+                isBomb: false,
+                knockBackModifier: weapon.knockback.Value,
+                addedPrecision: weapon.addedPrecision.Value,
+                critChance: weapon.critChance.Value,
+                critMultiplier: weapon.critMultiplier.Value,
+                triggerMonsterInvincibleTimer: weapon.type.Value != MeleeWeapon.dagger,
+                who: player
+                );
+            if (atk)
+                location.playSound(weapon.type.Value == MeleeWeapon.club ? "clubhit" : "daggerswipe", tile);
+            return true;
+        }
+
+        public static bool CanBreakBoulder(GameLocation location, Vector2 tile, SFarmer player, Tool tool, IModHelper helper,
+            [NotNullWhen(true)] out Func<Tool, bool> applyTool)
+        {
+            return GetResourceClumpOnTile(location, tile, player, helper.Reflection, out ResourceClump? clump,
+                       out applyTool) &&
+                   (ResourceUpgradeLevelsNeeded.TryGetValue(clump.parentSheetIndex.Value, out int requireUpgradeLevel) ||
+                    tool.UpgradeLevel >= requireUpgradeLevel);
+        }
+        public static bool CheckTileAction(GameLocation location, Vector2 tile, Farmer player)
+        {
+            return location.checkAction(new Location((int)tile.X, (int)tile.Y), Game1.viewport, player);
+        }
+
+        public static void UseItem(Farmer player, Item item) 
+        {
+            item.Stack -= 1;
+            if(item.Stack <= 0)
+            {
+                player.removeItemFromInventory(item);
+            }
+        }
+
+        public static void UseItem(Chest chest, Item item)
+        {
+            item.Stack -= 1;
+            if (item.Stack <= 0)
+            {
+                IInventory inventory = chest.GetItemsForPlayer();
+                for (int i = 0; i <= inventory.Count; i++)
+                {
+                    Item slot = inventory[i];
+                    if (slot != null && object.ReferenceEquals(item, slot))
+                    {
+                        inventory[i] = null;
+                        break;
+                    }
+                }
+            }
+        }
+        public static void CancelAnimation(Farmer player, params int[] animationIds)
+        {
+            int animationId = player.FarmerSprite.currentSingleAnimation;
+            foreach(int id in animationIds)
+            {
+                if(id == animationId)
+                {
+                    player.completelyStopAnimatingOrDoingAction();
+                    player.forceCanMove();
+                    break;
+                }
+            }
+        }
+
+        public static bool UpdateToolBeforeUse(Tool tool, Vector2 tile, Farmer player)
+        {
+            player.lastClick = GetToolPixelPosition(tile);
+            tool.lastUser = player;
+            return true;
+        }
+        
+        public static Vector2 GetToolPixelPosition(Vector2 tile)
+        {
+            return (tile * Game1.tileSize) + new Vector2(Game1.tileSize / 2f);
+        }
+
+
+        //Methods to do certain actions on objects/terrain
+
+        #region Resource Clumps
+
+        public static bool IsResourceClumpOnTile(GameLocation location, Vector2 tile, IReflectionHelper reflection)
+        {
+            return GetResourceClumpOnTile(location, tile, Game1.player, reflection, out _, out _);
+        }
+
+        public static bool GetResourceClumpOnTile(GameLocation location, Vector2 tile, Farmer player, IReflectionHelper reflection, [NotNullWhen(true)] out ResourceClump? clump, [NotNullWhen(true)] out Func<Tool, bool>? applyTool) 
+        {
+            Rectangle tileArea = GetAbsoluteTileArea(tile);
+
+            foreach(ResourceClump cur in location.resourceClumps)
+            {
+                if (cur.getBoundingBox().Intersects(tileArea))
+                {
+                    clump = cur;
+                    applyTool = tool => UseTool(tool, tile, player, location);
+                    return true;
+                }
+            }
+
+            clump = null;
+            applyTool = null;
+            return false;
+        }
+        #endregion
+
+        #region Animals
+        public static FarmAnimal? BestHarvestableAnimal(Tool tool, GameLocation location, Vector2 tile)
+        {
+            Vector2 useAt = GetToolPixelPosition(tile);
+            FarmAnimal? animal = Utility.GetBestHarvestableFarmAnimal(
+                animals: location.Animals.Values,
+                tool: tool,
+                toolRect: new Rectangle((int)useAt.X, (int)useAt.Y, Game1.tileSize, Game1.tileSize)
+                );
+
+            if (animal == null || !animal.CanGetProduceWithTool(tool) || !CommonHelper.IsItemId(animal.currentProduce.Value, allowZero: false) || animal.isBaby())
+                return null;
+
+            return animal;
+        }
+        #endregion
+
+        public static bool GetHoeDirt(TerrainFeature? tileFeature, SObject? tileObj, [NotNullWhen(true)] out HoeDirt? dirt, out bool isCoveredByObj, out IndoorPot? pot)
+        {
+            //Is Garden Pot
+            if(tileObj is IndoorPot foundPot)
+            {
+                pot = foundPot;
+                dirt = pot.hoeDirt.Value;
+                isCoveredByObj = false;
+                return true;
+            }
+
+            //Dirt Found
+            if((dirt = tileFeature as HoeDirt) != null)
+            {
+                pot = null;
+                isCoveredByObj = tileObj != null;
+                return true;
+            }
+
+            //Nothing was found
+            pot = null;
+            dirt = null;
+            isCoveredByObj = false;
+            return false;
+        }
+
+        public static bool BreakContainer(Vector2 tile, SObject? tileObj, Farmer player, Tool tool)
+        {
+            if(tileObj is BreakableContainer)
+            {
+                UpdateToolBeforeUse(tool, tile, player);
+                return tileObj.performToolAction(tool);
+            }
+
+            if(tileObj is { TypeDefinitionId: ItemRegistry.type_object, Name: "SupplyCrate"} and not Chest && UpdateToolBeforeUse(tool, tile, player) && tileObj.performToolAction(tool))
+            {
+                tileObj.performRemoveAction();
+                Game1.currentLocation.Objects.Remove(tile);
+                return true;
+            }
+
+            return false;
+        }
+
+
+        public static bool ClearDeadCrop(GameLocation location, Vector2 tile, TerrainFeature? tileFeature, Farmer player)
+        {
+            return tileFeature is HoeDirt { crop: not null } dirt && dirt.crop.dead.Value && UseTool(new Pickaxe(), tile, player, location);
+        }
+
+        public static bool HarvestGrass(Grass? grass, GameLocation location, Vector2 tile, Farmer player, Tool tool)
+        {
+            if (grass == null || !location.terrainFeatures.ContainsKey(tile))
+                return false;
+
+            grass.numberOfWeeds.Value = 0;
+            grass.TryDropItemsOnCut(tool);
+            location.terrainFeatures.Remove(tile);
+            return true;
+        }
+
+        /*
+        public static bool TryStartCooldown(string key, TimeSpan delay)
+        {
+            long currentTime = (long)Game1.currentGameTime.TotalGameTime.TotalMilliseconds;
+            if (!this.CooldownStartTimes.TryGetValue(key, out long startTime) || (currentTime - startTime) >= delay.TotalMilliseconds)
+            {
+                this.CooldownStartTimes[key] = currentTime;
+                return true;
+            }
+
+            return false;
+        }*/
+        
+        public static string FormatNumber(int val)
+        {
+            //return $"{val:#,0}";
+            return val.ToString("N0");
+        }
+
+        public static string PluralOrNot(int amt)
+        {
+            return amt > 1 ? "'s" : "";
+        }
+
+        public static void DoHud(string msg)
+        {
+            Game1.addHUDMessage(new HUDMessage(msg));
         }
     }
 }

@@ -5,14 +5,15 @@ using StardewValley;
 
 namespace Question
 {
-    public class ModEntry : Mod, IAssetEditor
+    public class ModEntry : Mod
     {
         string MapPath = "";
 
 
         public bool CanEdit<T>(IAssetInfo asset)
         {
-            return asset.AssetNameEquals(@"Data\mail");
+            //return asset.AssetNameEquals(@"Data\mail");
+            return false;
         }
 
         public void Edit<T>(IAssetData asset)

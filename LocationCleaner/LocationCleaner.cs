@@ -61,7 +61,7 @@ namespace LocationCleaner
         {
             return Game1.locations
                 .Concat(
-                    from location in Game1.locations.OfType<BuildableGameLocation>()
+                    from location in Game1.locations.OfType<GameLocation>()
                     from building in location.buildings
                     where building.indoors.Value != null
                     select building.indoors.Value
@@ -97,13 +97,13 @@ namespace LocationCleaner
             var seedId = 0;
             switch (tree.treeType.Value)
             {
-                case 1://Oak
+                case "1"://Oak
                     seedId = 309;
                     break;
-                case 2://Maple
+                case "2"://Maple
                     seedId = 310;
                     break;
-                case 3://Pine
+                case "3"://Pine
                     seedId = 311;
                     break;
                 default:

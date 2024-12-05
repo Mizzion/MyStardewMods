@@ -30,6 +30,7 @@ namespace BankOfFerngill
         private int _gainedAmt;
         private int _giftAmt;
 
+
         private readonly List<Vector2> _vaultCoords = new()
         {
             new Vector2(54,1), 
@@ -92,6 +93,8 @@ namespace BankOfFerngill
             
             //Load Events
             _events = helper.Events;
+            
+            
 
             //Events
             _events.Input.ButtonPressed += OnButtonPressed; //Event that triggers when a button is pressed.
@@ -220,13 +223,19 @@ namespace BankOfFerngill
             
             #region MobilePhone
 
-            _mobileApi = Helper.ModRegistry.GetApi<MobilePhoneApi>("aedenthorn.MobilePhone");
-            if (_mobileApi != null)
+            if (Helper.ModRegistry.IsLoaded("aedenthorn.MobilePhone"))
+                _mobileApi = Helper.ModRegistry.GetApi<MobilePhoneApi>("aedenthorn.MobilePhone");
+            else if (Helper.ModRegistry.IsLoaded("JoXW.MobilePhone"))
+                _mobileApi = Helper.ModRegistry.GetApi<MobilePhoneApi>("JoXW.MobilePhone");
+
+            if (_mobileApi == null)
             {
-                var appIcon = Helper.ModContent.Load<Texture2D>(Path.Combine("assets", "bank_phone_icon.png"));
-                var hasLoaded = _mobileApi.AddApp(Helper.ModRegistry.ModID, "Bank of Ferngill",DoBanking, appIcon);
-                Monitor.Log($"Loaded Bank of Ferngills Mobile Phone app successfully: {hasLoaded}", LogLevel.Debug);
+                Monitor.Log($"_mobileApi was null", LogLevel.Error);
+                return;
             }
+            var appIcon = Helper.ModContent.Load<Texture2D>(Path.Combine("assets", "bank_phone_icon.png"));
+            var hasLoaded = _mobileApi.AddApp(Helper.ModRegistry.ModID, "Bank of Ferngill",DoBanking, appIcon);
+            Monitor.Log($"Loaded Bank of Ferngills Mobile Phone app successfully: {hasLoaded}", LogLevel.Debug);
 
             #endregion
 
@@ -243,7 +252,7 @@ namespace BankOfFerngill
                 Monitor.Log("The config file was reloaded.");
             }
 
-            if (e.IsDown(SButton.NumPad4) && _debugging)
+            if (e.IsDown(SButton.NumPad4) && Game1.player.Name.Contains("Helper"))
             {
                 DoBanking();
             }
@@ -612,6 +621,7 @@ namespace BankOfFerngill
                 {
                     _bankData.MoneyInBank -= withdrawAmt;
                     Game1.player.Money += withdrawAmt;
+                    Game1.player.totalMoneyEarned -= Convert.ToUInt32(withdrawAmt);
                     Game1.exitActiveMenu();
                     Game1.showGlobalMessage(_i18N.Get("bank.withdraw.doWithdraw", new { amt = FormatNumber(withdrawAmt)}));
                 }

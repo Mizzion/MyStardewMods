@@ -221,7 +221,7 @@ namespace FerngillHelper
                 return SDate.Now().AddDays(i);
             }
 
-            return SDate.Now().AddDays(crop.dayOfCurrentPhase.Value >= crop.regrowAfterHarvest.Value ? crop.regrowAfterHarvest.Value : crop.dayOfCurrentPhase.Value);
+            return SDate.Now().AddDays(crop.dayOfCurrentPhase.Value >= crop.RegrowsAfterHarvest() ? crop.RegrowsAfterHarvest() : crop.dayOfCurrentPhase.Value);
         }
 
         private int getDays(SDate date, Crop? crop)

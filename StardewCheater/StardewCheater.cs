@@ -197,7 +197,7 @@ namespace StardewCheater
             #region GetTileUnderCursor
 
             // get tile under cursor
-            _currentTileBuilding = Game1.currentLocation is BuildableGameLocation buildableLocation
+            _currentTileBuilding = Game1.currentLocation is GameLocation buildableLocation
                 ? buildableLocation.getBuildingAt(Game1.currentCursorTile)
                 : null;
             if (Game1.currentLocation != null)
@@ -239,7 +239,7 @@ namespace StardewCheater
         }
         private void OnRenderedHud(object sender, RenderedHudEventArgs e)
         {
-            DoTimes();
+            //DoTimes();
             
         }
 
@@ -248,6 +248,7 @@ namespace StardewCheater
            // DoTrackerSkill();
         }
         //My custom Voids
+        /*
         private void DoTimes()
         {
             // draw hover tooltip
@@ -401,12 +402,8 @@ namespace StardewCheater
                             text,
                             Game1.smallFont);
                 }
-            }/*
-            else if (_currentTile != null)
-            {
-                if(_currentTile.IsSpawnedObject)
-            }*/
-        }
+            }
+        }*/
 
         private void DoTrackerSkill()
         {

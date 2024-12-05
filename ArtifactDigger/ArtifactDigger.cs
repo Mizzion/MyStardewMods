@@ -13,6 +13,8 @@ using SObject = StardewValley.Object;
 using StardewValley.Tools;
 using Common.Integrations;
 using StardewModdingAPI.Utilities;
+using Mizzion.Stardew.Common.Integrations.GenericModConfigMenu;
+using System.Diagnostics.CodeAnalysis;
 
 
 
@@ -22,8 +24,8 @@ namespace ArtifactDigger
     {
         private int _magneticRadius, _defaultMagneticRadius, _playerOriginalMagneticRadius, _radiusResetStatus;
         private bool _magneticRadiusResetActive;
-        private ModConfig _config;
-        private Mizzion.Stardew.Common.Integrations.GenericModConfigMenu.IGenericModConfigMenuApi _cfgMenu;
+        private ModConfig _config = null;
+        private IGenericModConfigMenuApi _cfgMenu = null;
         string[] keys;
         private SButton _activateKey;
         private static Texture2D _buildingPlacementTiles;
@@ -37,7 +39,7 @@ namespace ArtifactDigger
         /// <param name="helper"></param>
         public override void Entry(IModHelper helper)
         {
-            _config = helper.ReadConfig<ModConfig>();
+            this._config = helper.ReadConfig<ModConfig>();
             _defaultMagneticRadius = 128;
 
             _location = new List<Vector2>();
@@ -70,7 +72,7 @@ namespace ArtifactDigger
         {
             #region "Generic Mod Config Menu"
 
-            _cfgMenu = Helper.ModRegistry.GetApi<Mizzion.Stardew.Common.Integrations.GenericModConfigMenu.IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            _cfgMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
             if (_cfgMenu is null) return;
 
             _cfgMenu.Register(
@@ -249,7 +251,7 @@ namespace ArtifactDigger
         /// <param name="e">RenderedHud event args</param>
         public void OnHudRendered(object sender, RenderedWorldEventArgs e)
         {
-            _buildingPlacementTiles ??= Game1.content.Load<Texture2D>("LooseSprites\\buildingPlacementTiles");
+            //_buildingPlacementTiles ??= Game1.content.Load<Texture2D>("LooseSprites\\buildingPlacementTiles");
 
             var str = SafeToRun();
 
@@ -364,7 +366,7 @@ namespace ArtifactDigger
                 var g = i;
                 currentLocation.Objects.TryGetValue(g, out var @object);
 
-                if (@object is { ParentSheetIndex: 590 })
+                if (@object is { ParentSheetIndex: 590 } || @object is { ParentSheetIndex: 88 })
                     _location.Add(g);
             }
         }
@@ -383,7 +385,7 @@ namespace ArtifactDigger
                 var g = i;
                 currentLocation.Objects.TryGetValue(g, out var @object);
 
-                if (@object is { ParentSheetIndex: 590 })
+                if (@object is { ParentSheetIndex: 590 } || @object is { ParentSheetIndex: 88 })
                     _digLocation.Add(g);
             }
         }
@@ -398,18 +400,86 @@ namespace ArtifactDigger
             foreach (var i in gridRadius)
             {
                 var rec = AbsoluteTile(i);
+                var ter = currentLocation.terrainFeatures.TryGetValue(i, out TerrainFeature? terrainFeature);
 
+                Bush? bush = terrainFeature as Bush ?? currentLocation.largeTerrainFeatures.FirstOrDefault(p => p.getBoundingBox().Intersects(rec)) as Bush;
+
+                TryHarvestBush(bush);
+                
+                /*
                 if (currentLocation.getLargeTerrainFeatureAt(rec.X, rec.Y) is Bush bush)
                 {
                     if (!bush.townBush.Value && bush.tileSheetOffset.Value == 1 && bush.inBloom())
                     {
                         bush.performUseAction(bush.netTilePosition.Value);
                     }
-                }
+                }*/
                
 
 
             }
+        }
+
+
+        /// <summary>Harvest a bush if it's ready.</summary>
+        /// <param name="bush">The bush to harvest.</param>
+        /// <returns>Returns whether it was harvested.</returns>
+        private bool TryHarvestBush([NotNullWhen(true)] Bush? bush)
+        {
+            // harvest if ready
+            if (bush?.tileSheetOffset.Value == 1)
+            {
+                bool isTeaBush = bush.size.Value == Bush.greenTeaBush;
+                bool isBerryBush = !isTeaBush && bush.size.Value == Bush.mediumBush && !bush.townBush.Value;
+                if (isTeaBush || isBerryBush)
+                {
+                    bush.performUseAction(bush.Tile);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>Try to harvest a tree.</summary>
+        /// <param name="terrainFeature">The tree to harvest.</param>
+        /// <param name="tile">The tile being harvested.</param>
+        /// <param name="scythe">The scythe being used.</param>
+        /// <returns>Returns whether it was harvested.</returns>
+        private bool TryHarvestTree([NotNullWhen(true)] TerrainFeature? terrainFeature, Vector2 tile, Tool scythe)
+        {
+            switch (terrainFeature)
+            {
+                case FruitTree tree:
+                    if (/*this.Config.HarvestFruitTrees &&*/ tree.fruit.Count > 0)
+                    {
+                        tree.performUseAction(tile);
+                        return true;
+                    }
+                    break;
+
+                case Tree tree:
+                    if (tree.hasSeed.Value && !tree.tapped.Value)
+                    {
+                        bool shouldHarvest = tree.treeType.Value is (Tree.palmTree or Tree.palmTree2);
+                        /*
+                        bool shouldHarvest = tree.treeType.Value is (Tree.palmTree or Tree.palmTree2)
+                       ? this.Config.HarvestFruitTrees
+                       : this.Config.HarvestTreeSeeds;*/
+
+                        if (shouldHarvest && tree.performUseAction(tile))
+                            return true;
+                    }
+
+                    if (tree.hasMoss.Value/* && this.Config.HarvestTreeMoss*/)
+                    {
+                        if (tree.performToolAction(scythe, 0, tile))
+                            return true;
+                    }
+                    break;
+            }
+
+            return false;
         }
 
         /// <summary>
