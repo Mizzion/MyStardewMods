@@ -3,10 +3,13 @@
     <AssemblyName>FarmCleaner</AssemblyName>
     <RootNamespace>FarmCleaner</RootNamespace>
     <Version>2.0.2</Version>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+	  <EnableHarmony>false</EnableHarmony>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.3.2" />
+    <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.4.0" />
   </ItemGroup>
+
+  <Import Project="..\Common\Common\Common.projitems" Label="Shared" />
 </Project>

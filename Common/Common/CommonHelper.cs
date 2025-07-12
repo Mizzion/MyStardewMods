@@ -1,23 +1,30 @@
 ﻿#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MyStardewMods.Common.UI;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Buffs;
+using StardewValley.Buildings;
+using StardewValley.Characters;
+using StardewValley.Constants;
+using StardewValley.Extensions;
+using StardewValley.GameData.FarmAnimals;
 using StardewValley.Inventories;
 using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using xTile.Dimensions;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 using SFarmer = StardewValley.Farmer;
 using SObject = StardewValley.Object;
+using STree = StardewValley.TerrainFeatures.Tree;
 
 namespace MyStardewMods.Common
 {
@@ -579,6 +586,7 @@ namespace MyStardewMods.Common
                 }
             }
         }
+        
         public static void CancelAnimation(Farmer player, params int[] animationIds)
         {
             int animationId = player.FarmerSprite.currentSingleAnimation;
@@ -650,6 +658,34 @@ namespace MyStardewMods.Common
 
             return animal;
         }
+
+        public static List<FarmAnimal> GetAnimals()
+        {
+            Farm farm = Game1.getFarm();
+            List<FarmAnimal> animals = farm.getAllFarmAnimals().ToList();
+
+            foreach(Building building in farm.buildings)
+            {
+                if (building.indoors.Value != null && building.indoors.Value.GetType() == typeof(AnimalHouse))
+                    animals.AddRange(((AnimalHouse)building.indoors.Value).animals.Values.ToList());
+            }
+            return animals;
+        }
+
+        public static List<Pet> GetPets()
+        {
+            List<Pet> pets = new();
+
+            foreach(GameLocation location in Game1.locations)
+            {
+                foreach(Pet pet in location.characters.OfType<Pet>())
+                {
+                    pets.Add(pet);
+                }
+            }
+
+            return pets;
+        }
         #endregion
 
         public static bool GetHoeDirt(TerrainFeature? tileFeature, SObject? tileObj, [NotNullWhen(true)] out HoeDirt? dirt, out bool isCoveredByObj, out IndoorPot? pot)
@@ -713,6 +749,319 @@ namespace MyStardewMods.Common
             return true;
         }
 
+        public static bool IsTapped(Tree tree, Vector2 tile, GameLocation location)
+        {
+            return tree.tapped.Value || (location.objects.TryGetValue(tile, out SObject obj) && obj.IsTapper());
+        }
+
+        #region Clear Location Methods
+
+        public static void ClearLocationWeeds(GameLocation location, Chest? chest, bool haveDebri, SObject obj, Vector2 tile, Farmer? who = null)
+        {
+            if (who is null)
+                return;
+
+            string weedOrFiber = Game1.random.NextDouble() < 0.5 ? "771" : "770";
+
+            if(chest is not null)
+            {
+                //chest.addItem(new SObject(weedOrFiber, 1));
+                
+                Color c = Color.Green;
+                string sound = "cut";
+                int animation = 50;
+                obj.Fragility = 2;
+                string? toDrop = null;
+                if (Game1.random.NextBool())
+                {
+                    toDrop = "771";
+                }
+                else if (Game1.random.NextDouble() < 0.05 + ((who.stats.Get("Book_WildSeeds") != 0) ? 0.04 : 0.0))
+                {
+                    toDrop = "770";
+                }
+                else if (Game1.currentSeason == "summer" && Game1.random.NextDouble() < 0.05 + ((who.stats.Get("Book_WildSeeds") != 0) ? 0.04 : 0.0))
+                {
+                    toDrop = "MixedFlowerSeeds";
+                }
+                if (obj.name.Contains("GreenRainWeeds") && Game1.random.NextDouble() < 0.1)
+                {
+                    toDrop = "Moss";
+                }
+                switch (obj.QualifiedItemId)
+                {
+                    case "(O)678":
+                        c = new Color(228, 109, 159);
+                        break;
+                    case "(O)679":
+                        c = new Color(253, 191, 46);
+                        break;
+                    case "(O)313":
+                    case "(O)314":
+                    case "(O)315":
+                        c = new Color(84, 101, 27);
+                        break;
+                    case "(O)318":
+                    case "(O)316":
+                    case "(O)317":
+                        c = new Color(109, 49, 196);
+                        break;
+                    case "(O)319":
+                        c = new Color(30, 216, 255);
+                        sound = "breakingGlass";
+                        animation = 47;
+                        toDrop = null;
+                        break;
+                    case "(O)320":
+                        c = new Color(175, 143, 255);
+                        sound = "breakingGlass";
+                        animation = 47;
+                        toDrop = null;
+                        break;
+                    case "(O)321":
+                        c = new Color(73, 255, 158);
+                        sound = "breakingGlass";
+                        animation = 47;
+                        toDrop = null;
+                        break;
+                    case "(O)793":
+                    case "(O)794":
+                    case "(O)792":
+                        toDrop = "770";
+                        break;
+                    case "(O)883":
+                    case "(O)884":
+                    case "(O)882":
+                        c = new Color(30, 97, 68);
+                        if (Game1.MasterPlayer.hasOrWillReceiveMail("islandNorthCaveOpened") && Game1.random.NextDouble() < 0.1 && !Game1.MasterPlayer.hasOrWillReceiveMail("gotMummifiedFrog"))
+                        {
+                            Game1.addMailForTomorrow("gotMummifiedFrog", noLetter: true, sendToEveryone: true);
+                            toDrop = "828";
+                        }
+                        else if (Game1.random.NextDouble() < 0.01)
+                        {
+                            toDrop = "828";
+                        }
+                        else if (Game1.random.NextDouble() < 0.08)
+                        {
+                            toDrop = "831";
+                        }
+                        break;
+                    case "GreenRainWeeds0":
+                    case "GreenRainWeeds1":
+                    case "GreenRainWeeds4":
+                        sound = "weed_cut";
+                        break;
+                }
+                if (sound.Equals("breakingGlass") && Game1.random.NextDouble() < 0.0025)
+                {
+                    toDrop = "338";
+                }                
+                if (!sound.Equals("breakingGlass"))
+                {
+                    if (Game1.random.NextDouble() < 1E-05)
+                    {
+                        chest.addItem(new SObject("(H)40", 1));
+                    }
+                    if (Game1.random.NextDouble() <= 0.01 && Game1.player.team.SpecialOrderRuleActive("DROP_QI_BEANS"))
+                    {
+                        chest.addItem(new SObject("(O)890", 1));
+                    }
+                }
+                if (toDrop != null)
+                {
+                    chest.addItem(new SObject(toDrop, 1));
+                }
+                if (Game1.random.NextDouble() < 0.02)
+                {
+                    location.addJumperFrog(obj.TileLocation);
+                }
+                if (location.HasUnlockedAreaSecretNotes(who) && Game1.random.NextDouble() < 0.009)
+                {
+                    SObject o = location.tryToCreateUnseenSecretNote(who);
+                    if (o != null)
+                    {
+                        Game1.createItemDebris(o, new Vector2(who.getStandingPosition().X + 0.5f, who.getStandingPosition().Y + 0.75f) * 64f, Game1.player.FacingDirection, location);
+                    }
+                }
+            }
+            else if (haveDebri)
+            {
+                obj.cutWeed(who);
+            }
+            location.objects.Remove(obj.TileLocation);// removeObject(tile, showDestroyedObject: false);
+
+        }
+
+        public static void ClearLocationStones(GameLocation location, Chest? chest, bool haveDebri, SObject obj, Vector2 tile, Farmer? who = null)
+        {
+           
+        }
+
+        public static void ClearLocationOres(GameLocation location, Chest? chest, bool haveDebri, SObject obj, Vector2 tile, Farmer? who = null)
+        {
+            
+        }
+
+        public static void ClearLocationGems(GameLocation location, Chest? chest, bool haveDebri, SObject obj, Vector2 tile, Farmer? who = null)
+        {
+
+        }
+
+        public static void ClearLocationForage(GameLocation location, Chest? chest, bool haveDebri, SObject obj, Vector2 tile, Farmer? who = null)
+        {
+            
+        }
+
+        public static void ClearLocationTwigs(GameLocation location, Chest? chest, bool haveDebri, SObject obj, Vector2 tile, Farmer? who = null)
+        {
+
+        }
+
+        public static void ClearLocationBarrels(GameLocation location, Chest? chest, bool haveDebri, SObject obj, Vector2 tile, Farmer? who = null)
+        {
+            
+        }
+
+        public static void ClearLocationGrass(GameLocation location, Chest? chest, bool haveDebri, TerrainFeature ter, Vector2 tile, Farmer? who = null)
+        {
+            
+        }
+
+        public static void ClearLocationTrees(GameLocation location, Chest? chest, bool haveDebri, TerrainFeature ter, Vector2 tile, Farmer? who = null)
+        {
+
+        }
+
+        public static void ClearLocationStumps(GameLocation location, Chest? chest, bool haveDebri, ResourceClump clumps, Farmer? who = null)
+        {
+            
+        }
+
+        public static void ClearLocationLargeLogs(GameLocation location, Chest? chest, bool haveDebri, ResourceClump clumps, Farmer? who = null)
+        {
+            
+        }
+
+        public static void ClearLocationLargeStones(GameLocation location, Chest? chest, bool haveDebri, ResourceClump clumps, Farmer? who = null)
+        {
+           
+        }
+        public static void ClearLocation(GameLocation location, Farmer? who = null)
+        {
+            if (location is null)
+                return;
+
+
+            
+            List<string> weeds = new() { "313", "314", "315", "316", "317", "318", "31", "320", "321", "674", "675", "785" };
+            List<string> stones = new() { "32", "34", "36", "38", "40", "42", "48", "50", "52", "54", "56", "58", "343", "450", "668", "670", "760", "762" };
+            List<string> gems = new() { "2", "4", "6", "8", "10", "12", "14", "44" };
+            List<string> twigs = new() { "294", "295" };
+            List<string> barrels = new() { "118", "120", "122" };
+
+            #region locaction.objects
+            if(location.objects.Count() > 0)
+            {
+                var locObjs = location.objects.Pairs;
+
+                foreach (var obj in locObjs)
+                {
+
+                    if(obj.Value.IsWeeds())
+                    {
+                        obj.Value.cutWeed(who);
+                        
+                        continue;
+                    }
+                    /*
+                    if (weeds.Contains(obj.Value.ItemId))
+                    {
+                        ClearLocationWeeds(location, chest, haveDebri, obj.Value, obj.Key, who);
+                    }
+                    if (stones.Contains(obj.Value.ItemId))
+                    {
+                        ClearLocationStones(location, chest, haveDebri, obj.Value, obj.Key, who);
+                    }
+                    if (gems.Contains(obj.Value.ItemId))
+                    {
+                        ClearLocationGems(location, chest, haveDebri, obj.Value, obj.Key, who);
+                    }
+                    if (obj.Value.isForage())
+                    {
+                        ClearLocationForage(location, chest, haveDebri, obj.Value, obj.Key, who);
+                    }
+                    if (twigs.Contains(obj.Value.ItemId))
+                    {
+                        ClearLocationTwigs(location, chest, haveDebri, obj.Value, obj.Key, who);
+                    }
+                    if (barrels.Contains(obj.Value.ItemId))
+                    {
+                        ClearLocationBarrels(location, chest, haveDebri, obj.Value, obj.Key, who);
+                    }*/
+                }
+            }
+
+            #endregion
+
+            #region location.terrainFeatures
+            /*
+            if(location.terrainFeatures.Count() > 0)
+            {
+
+                foreach (var ter in location.terrainFeatures.Pairs.ToList())
+                {
+                    //STree t = (STree) ter.Value;
+                    if (ter.Value is Grass)
+                    {
+                        LocationClearGrass(location, chest, haveDebri, ter.Value, ter.Key, who);
+                    }
+                    if (ter.Value is Tree)
+                    {
+                        LocationClearTrees(location, chest, haveDebri, ter.Value, ter.Key, who);
+                    }
+                }
+            }*/
+            #endregion
+
+            #region location.resourceClumps
+            /*
+            if(location.resourceClumps.Count() > 0)
+            {
+                foreach (var clumps in location.resourceClumps.ToList())
+                {
+                    if (clumps.parentSheetIndex.Value == 600)
+                    {
+                        ClearLocationStumps(location, chest, haveDebri, clumps, who);
+                    }                        
+                    if (clumps.parentSheetIndex.Value == 602)
+                    {
+                        ClearLocationLargeLogs(location, chest, haveDebri, clumps, who);
+                    }
+                    if (clumps.parentSheetIndex.Value == 672)
+                    {
+                        ClearLocationLargeStones(location, chest, haveDebri, clumps, who);
+                    }
+                }
+            }*/
+            #endregion
+
+        }
+
+        public static void DestroyStone(string stoneId, int x, int y, Farmer who, Chest chest = null)
+        {
+
+        }
+
+        public static Dictionary<string, int> BreakStone(string stoneId, Farmer who)
+        {
+            Dictionary<string, int> stoneDrops = new();
+
+
+            return stoneDrops;
+        }
+
+        #endregion
         /*
         public static bool TryStartCooldown(string key, TimeSpan delay)
         {
@@ -725,7 +1074,333 @@ namespace MyStardewMods.Common
 
             return false;
         }*/
-        
+
+
+        /// <summary>
+        /// Applies a custom buff to the player with configurable effects and duration.
+        /// </summary>
+        /// <remarks>This method creates a custom buff with the specified effects and applies it to the
+        /// player. The buff icon is loaded from the specified asset location, and the duration is configurable. If no
+        /// duration is specified, the buff will last indefinitely.</remarks>
+        /// <param name="helper">The mod helper instance used to load assets and interact with the game.</param>
+        /// <param name="assetLocation">The file path to the texture asset for the buff icon.</param>
+        /// <param name="durationTime">The duration of the buff in seconds. If set to -1, the buff will last indefinitely.</param>
+        /// <param name="farming">A value indicating whether the buff should increase the player's farming level.</param>
+        /// <param name="farmingLevel">The amount by which to increase the farming level, if <paramref name="farming"/> is <see langword="true"/>.</param>
+        /// <param name="fishing">A value indicating whether the buff should increase the player's fishing level.</param>
+        /// <param name="fishingLevel">The amount by which to increase the fishing level, if <paramref name="fishing"/> is <see langword="true"/>.</param>
+        /// <param name="mining">A value indicating whether the buff should increase the player's mining level.</param>
+        /// <param name="miningLevel">The amount by which to increase the mining level, if <paramref name="mining"/> is <see langword="true"/>.</param>
+        /// <param name="luck">A value indicating whether the buff should increase the player's luck level.</param>
+        /// <param name="luckLevel">The amount by which to increase the luck level, if <paramref name="luck"/> is <see langword="true"/>.</param>
+        /// <param name="foraging">A value indicating whether the buff should increase the player's foraging level.</param>
+        /// <param name="foragingLevel">The amount by which to increase the foraging level, if <paramref name="foraging"/> is <see
+        /// langword="true"/>.</param>
+        /// <param name="maxStamina">A value indicating whether the buff should increase the player's maximum stamina.</param>
+        /// <param name="addedMaxStamina">The amount by which to increase the maximum stamina, if <paramref name="maxStamina"/> is <see
+        /// langword="true"/>.</param>
+        /// <param name="magneticRadius">A value indicating whether the buff should increase the player's magnetic radius.</param>
+        /// <param name="addedMagneticRadius">The amount by which to increase the magnetic radius, if <paramref name="magneticRadius"/> is <see
+        /// langword="true"/>.</param>
+        /// <param name="speed">A value indicating whether the buff should increase the player's movement speed.</param>
+        /// <param name="addedSpeed">The amount by which to increase the movement speed, if <paramref name="speed"/> is <see langword="true"/>.</param>
+        /// <param name="defense">A value indicating whether the buff should increase the player's defense.</param>
+        /// <param name="addedDefense">The amount by which to increase the defense, if <paramref name="defense"/> is <see langword="true"/>.</param>
+        /// <param name="attack">A value indicating whether the buff should increase the player's attack power.</param>
+        /// <param name="addedAttack">The amount by which to increase the attack power, if <paramref name="attack"/> is <see langword="true"/>.</param>
+        public static void AddBuff(IModHelper helper, 
+            string assetLocation, 
+            int durationTime = -1, 
+            bool godMode = false,
+            bool farming = false, 
+            int farmingLevel = 1, 
+            bool fishing = false,
+            int fishingLevel = 1,
+            bool mining = false,
+            int miningLevel = 1,
+            bool luck = false,
+            int luckLevel = 1,
+            bool foraging = false,
+            int foragingLevel = 1,
+            bool maxStamina = false,
+            int addedMaxStamina = 1,
+            bool magneticRadius = false,
+            int addedMagneticRadius = 1,
+            bool speed = false,
+            float addedSpeed = 1.5f,
+            bool defense = false,
+            int addedDefense = 1,
+            bool attack = false,
+            int addedAttack = 1)
+        {
+            Buff? buff = null;
+            if(godMode)
+            {
+                buff = new(
+                id: "Mizzion.FarmHelper.HelperBuff",
+                displayName: "Magnetic Radius Buff",
+                iconTexture: helper.ModContent.Load<Texture2D>(assetLocation),
+                iconSheetIndex: 0,
+                duration: durationTime == -1 ? StardewValley.Buff.ENDLESS : durationTime * 1000,//60000,
+                effects: new BuffEffects()
+                {
+                    FarmingLevel = { farmingLevel > 0 ? farmingLevel : 1 },
+                    FishingLevel = { fishingLevel > 0 ? fishingLevel : 1},
+                    MiningLevel = { miningLevel > 0 ? miningLevel : 1},
+                    LuckLevel = { luckLevel > 0 ? luckLevel : 1},
+                    ForagingLevel = { foragingLevel > 0 ? foragingLevel : 1},
+                    MaxStamina = { addedMaxStamina > 0 ? addedMaxStamina : 1},
+                    MagneticRadius = { addedMagneticRadius > 0 ? addedMagneticRadius : 1},
+                    Speed = { addedSpeed > 0.9f ? addedSpeed : 1.0f},
+                    Defense = { addedDefense > 0 ? addedDefense : 1},
+                    Attack = { addedAttack > 0 ? addedAttack : 1}
+
+                }
+                );
+            }
+            else if (farming)
+            {
+                buff = new(
+                id: "Mizzion.FarmHelper.HelperBuff",
+                displayName: "Magnetic Radius Buff",
+                iconTexture: helper.ModContent.Load<Texture2D>(assetLocation),
+                iconSheetIndex: 0,
+                duration: durationTime == -1 ? StardewValley.Buff.ENDLESS : durationTime * 1000,//60000,
+                effects: new BuffEffects()
+                {
+                    FarmingLevel = { farmingLevel > 0 ? farmingLevel : 1 },
+                    //FishingLevel = { fishingLevel > 0 ? fishingLevel : 1},
+                    //MiningLevel = { miningLevel > 0 ? miningLevel : 1},
+                    //LuckLevel = { luckLevel > 0 ? luckLevel : 1},
+                    //ForagingLevel = { foragingLevel > 0 ? foragingLevel : 1},
+                    //MaxStamina = { addedMaxStamina > 0 ? addedMaxStamina : 1},
+                    //MagneticRadius = { addedMagneticRadius > 0 ? addedMagneticRadius : 1},
+                    //Speed = { addedSpeed > 0.9f ? addedSpeed : 1.0f},
+                    //Defense = { addedDefense > 0 ? addedDefense : 1},
+                    //Attack = { addedAttack > 0 ? addedAttack : 1}
+
+                }
+                );
+            }
+            else if (fishing)
+            {
+                buff = new(
+                id: "Mizzion.FarmHelper.HelperBuff",
+                displayName: "Magnetic Radius Buff",
+                iconTexture: helper.ModContent.Load<Texture2D>(assetLocation),
+                iconSheetIndex: 0,
+                duration: durationTime == -1 ? StardewValley.Buff.ENDLESS : durationTime * 1000,//60000,
+                effects: new BuffEffects()
+                {
+                    //FarmingLevel = { farmingLevel > 0 ? farmingLevel : 1 },
+                    FishingLevel = { fishingLevel > 0 ? fishingLevel : 1},
+                    //MiningLevel = { miningLevel > 0 ? miningLevel : 1},
+                    //LuckLevel = { luckLevel > 0 ? luckLevel : 1},
+                    //ForagingLevel = { foragingLevel > 0 ? foragingLevel : 1},
+                    //MaxStamina = { addedMaxStamina > 0 ? addedMaxStamina : 1},
+                    //MagneticRadius = { addedMagneticRadius > 0 ? addedMagneticRadius : 1},
+                    //Speed = { addedSpeed > 0.9f ? addedSpeed : 1.0f},
+                    //Defense = { addedDefense > 0 ? addedDefense : 1},
+                    //Attack = { addedAttack > 0 ? addedAttack : 1}
+
+                }
+                );
+            }
+           else if (mining)
+            {
+                buff = new(
+                id: "Mizzion.FarmHelper.HelperBuff",
+                displayName: "Magnetic Radius Buff",
+                iconTexture: helper.ModContent.Load<Texture2D>(assetLocation),
+                iconSheetIndex: 0,
+                duration: durationTime == -1 ? StardewValley.Buff.ENDLESS : durationTime * 1000,//60000,
+                effects: new BuffEffects()
+                {
+                    //FarmingLevel = { farmingLevel > 0 ? farmingLevel : 1 },
+                    //FishingLevel = { fishingLevel > 0 ? fishingLevel : 1},
+                    MiningLevel = { miningLevel > 0 ? miningLevel : 1},
+                    //LuckLevel = { luckLevel > 0 ? luckLevel : 1},
+                    //ForagingLevel = { foragingLevel > 0 ? foragingLevel : 1},
+                    //MaxStamina = { addedMaxStamina > 0 ? addedMaxStamina : 1},
+                    //MagneticRadius = { addedMagneticRadius > 0 ? addedMagneticRadius : 1},
+                    //Speed = { addedSpeed > 0.9f ? addedSpeed : 1.0f},
+                    //Defense = { addedDefense > 0 ? addedDefense : 1},
+                    //Attack = { addedAttack > 0 ? addedAttack : 1}
+
+                }
+                );
+            }
+            else if (luck)
+            {
+                buff = new(
+                id: "Mizzion.FarmHelper.HelperBuff",
+                displayName: "Magnetic Radius Buff",
+                iconTexture: helper.ModContent.Load<Texture2D>(assetLocation),
+                iconSheetIndex: 0,
+                duration: durationTime == -1 ? StardewValley.Buff.ENDLESS : durationTime * 1000,//60000,
+                effects: new BuffEffects()
+                {
+                    //FarmingLevel = { farmingLevel > 0 ? farmingLevel : 1 },
+                    //FishingLevel = { fishingLevel > 0 ? fishingLevel : 1},
+                    //MiningLevel = { miningLevel > 0 ? miningLevel : 1},
+                    LuckLevel = { luckLevel > 0 ? luckLevel : 1},
+                    //ForagingLevel = { foragingLevel > 0 ? foragingLevel : 1},
+                    //MaxStamina = { addedMaxStamina > 0 ? addedMaxStamina : 1},
+                    //MagneticRadius = { addedMagneticRadius > 0 ? addedMagneticRadius : 1},
+                    //Speed = { addedSpeed > 0.9f ? addedSpeed : 1.0f},
+                    //Defense = { addedDefense > 0 ? addedDefense : 1},
+                    //Attack = { addedAttack > 0 ? addedAttack : 1}
+
+                }
+                );
+            }
+            else if (foraging)
+            {
+                buff = new(
+                id: "Mizzion.FarmHelper.HelperBuff",
+                displayName: "Magnetic Radius Buff",
+                iconTexture: helper.ModContent.Load<Texture2D>(assetLocation),
+                iconSheetIndex: 0,
+                duration: durationTime == -1 ? StardewValley.Buff.ENDLESS : durationTime * 1000,//60000,
+                effects: new BuffEffects()
+                {
+                    //FarmingLevel = { farmingLevel > 0 ? farmingLevel : 1 },
+                    //FishingLevel = { fishingLevel > 0 ? fishingLevel : 1},
+                    //MiningLevel = { miningLevel > 0 ? miningLevel : 1},
+                    //LuckLevel = { luckLevel > 0 ? luckLevel : 1},
+                    ForagingLevel = { foragingLevel > 0 ? foragingLevel : 1},
+                    //MaxStamina = { addedMaxStamina > 0 ? addedMaxStamina : 1},
+                    //MagneticRadius = { addedMagneticRadius > 0 ? addedMagneticRadius : 1},
+                    //Speed = { addedSpeed > 0.9f ? addedSpeed : 1.0f},
+                    //Defense = { addedDefense > 0 ? addedDefense : 1},
+                    //Attack = { addedAttack > 0 ? addedAttack : 1}
+
+                }
+                );
+            }
+            else if (maxStamina)
+            {
+                buff = new(
+                id: "Mizzion.FarmHelper.HelperBuff",
+                displayName: "Magnetic Radius Buff",
+                iconTexture: helper.ModContent.Load<Texture2D>(assetLocation),
+                iconSheetIndex: 0,
+                duration: durationTime == -1 ? StardewValley.Buff.ENDLESS : durationTime * 1000,//60000,
+                effects: new BuffEffects()
+                {
+                    //FarmingLevel = { farmingLevel > 0 ? farmingLevel : 1 },
+                    //FishingLevel = { fishingLevel > 0 ? fishingLevel : 1},
+                    //MiningLevel = { miningLevel > 0 ? miningLevel : 1},
+                    //LuckLevel = { luckLevel > 0 ? luckLevel : 1},
+                    //ForagingLevel = { foragingLevel > 0 ? foragingLevel : 1},
+                    MaxStamina = { addedMaxStamina > 0 ? addedMaxStamina : 1},
+                    //MagneticRadius = { addedMagneticRadius > 0 ? addedMagneticRadius : 1},
+                    //Speed = { addedSpeed > 0.9f ? addedSpeed : 1.0f},
+                    //Defense = { addedDefense > 0 ? addedDefense : 1},
+                    //Attack = { addedAttack > 0 ? addedAttack : 1}
+
+                }
+                );
+            }
+            else if (magneticRadius)
+            {
+                buff = new(
+                id: "Mizzion.FarmHelper.HelperBuff",
+                displayName: "Magnetic Radius Buff",
+                iconTexture: helper.ModContent.Load<Texture2D>(assetLocation),
+                iconSheetIndex: 0,
+                duration: durationTime == -1 ? StardewValley.Buff.ENDLESS : durationTime * 1000,//60000,
+                effects: new BuffEffects()
+                {
+                    //FarmingLevel = { farmingLevel > 0 ? farmingLevel : 1 },
+                    //FishingLevel = { fishingLevel > 0 ? fishingLevel : 1},
+                    //MiningLevel = { miningLevel > 0 ? miningLevel : 1},
+                    //LuckLevel = { luckLevel > 0 ? luckLevel : 1},
+                    //ForagingLevel = { foragingLevel > 0 ? foragingLevel : 1},
+                    //MaxStamina = { addedMaxStamina > 0 ? addedMaxStamina : 1},
+                    MagneticRadius = { addedMagneticRadius > 0 ? addedMagneticRadius : 1},
+                    //Speed = { addedSpeed > 0.9f ? addedSpeed : 1.0f},
+                    //Defense = { addedDefense > 0 ? addedDefense : 1},
+                    //Attack = { addedAttack > 0 ? addedAttack : 1}
+
+                }
+                );
+            }
+            else if (speed)
+            {
+                buff = new(
+                id: "Mizzion.FarmHelper.HelperBuff",
+                displayName: "Magnetic Radius Buff",
+                iconTexture: helper.ModContent.Load<Texture2D>(assetLocation),
+                iconSheetIndex: 0,
+                duration: durationTime == -1 ? StardewValley.Buff.ENDLESS : durationTime * 1000,//60000,
+                effects: new BuffEffects()
+                {
+                    //FarmingLevel = { farmingLevel > 0 ? farmingLevel : 1 },
+                    //FishingLevel = { fishingLevel > 0 ? fishingLevel : 1},
+                    //MiningLevel = { miningLevel > 0 ? miningLevel : 1},
+                    //LuckLevel = { luckLevel > 0 ? luckLevel : 1},
+                    //ForagingLevel = { foragingLevel > 0 ? foragingLevel : 1},
+                    //MaxStamina = { addedMaxStamina > 0 ? addedMaxStamina : 1},
+                    //MagneticRadius = { addedMagneticRadius > 0 ? addedMagneticRadius : 1},
+                    Speed = { addedSpeed > 0.9f ? addedSpeed : 1.0f},
+                    //Defense = { addedDefense > 0 ? addedDefense : 1},
+                    //Attack = { addedAttack > 0 ? addedAttack : 1}
+
+                }
+                );
+            }
+            else if (defense)
+            {
+                buff = new(
+                id: "Mizzion.FarmHelper.HelperBuff",
+                displayName: "Magnetic Radius Buff",
+                iconTexture: helper.ModContent.Load<Texture2D>(assetLocation),
+                iconSheetIndex: 0,
+                duration: durationTime == -1 ? StardewValley.Buff.ENDLESS : durationTime * 1000,//60000,
+                effects: new BuffEffects()
+                {
+                    //FarmingLevel = { farmingLevel > 0 ? farmingLevel : 1 },
+                    //FishingLevel = { fishingLevel > 0 ? fishingLevel : 1},
+                    //MiningLevel = { miningLevel > 0 ? miningLevel : 1},
+                    //LuckLevel = { luckLevel > 0 ? luckLevel : 1},
+                    //ForagingLevel = { foragingLevel > 0 ? foragingLevel : 1},
+                    //MaxStamina = { addedMaxStamina > 0 ? addedMaxStamina : 1},
+                    //MagneticRadius = { addedMagneticRadius > 0 ? addedMagneticRadius : 1},
+                    //Speed = { addedSpeed > 0.9f ? addedSpeed : 1.0f},
+                    Defense = { addedDefense > 0 ? addedDefense : 1},
+                    //Attack = { addedAttack > 0 ? addedAttack : 1}
+
+                }
+                );
+            }
+            else if (attack)
+            {
+                buff = new(
+                id: "Mizzion.FarmHelper.HelperBuff",
+                displayName: "Magnetic Radius Buff",
+                iconTexture: helper.ModContent.Load<Texture2D>(assetLocation),
+                iconSheetIndex: 0,
+                duration: durationTime == -1 ? StardewValley.Buff.ENDLESS : durationTime * 1000,//60000,
+                effects: new BuffEffects()
+                {
+                    //FarmingLevel = { farmingLevel > 0 ? farmingLevel : 1 },
+                    //FishingLevel = { fishingLevel > 0 ? fishingLevel : 1},
+                    //MiningLevel = { miningLevel > 0 ? miningLevel : 1},
+                    //LuckLevel = { luckLevel > 0 ? luckLevel : 1},
+                    //ForagingLevel = { foragingLevel > 0 ? foragingLevel : 1},
+                    //MaxStamina = { addedMaxStamina > 0 ? addedMaxStamina : 1},
+                    //MagneticRadius = { addedMagneticRadius > 0 ? addedMagneticRadius : 1},
+                    //Speed = { addedSpeed > 0.9f ? addedSpeed : 1.0f},
+                    //Defense = { addedDefense > 0 ? addedDefense : 1},
+                    Attack = { addedAttack > 0 ? addedAttack : 1}
+
+                }
+                );
+            }
+
+                Game1.player.applyBuff(buff);
+        }
         public static string FormatNumber(int val)
         {
             //return $"{val:#,0}";
@@ -740,6 +1415,76 @@ namespace MyStardewMods.Common
         public static void DoHud(string msg)
         {
             Game1.addHUDMessage(new HUDMessage(msg));
+        }
+
+        public enum SkillType
+        {
+            Farming = 0,
+            Fishing = 1,
+            Foraging = 2,
+            Mining = 3,
+            Combat = 4,
+            Luck = 5
+        }
+        public enum Profession
+        {
+            Rancher = 0,
+            Tiller = 1,
+            Butcher = 2,
+            Shepherd = 3,
+            Artisan = 4,
+            Agriculturist = 5,
+            Fisher = 6,
+            Trapper = 7,
+            Angler = 8,
+            Pirate = 9,
+            BaitMaster = 10,
+            Mariner = 11,
+            Forrester = 12,
+            Gatherer = 13,
+            Lumberjack = 14,
+            Tapper = 15,
+            Botanist = 16,
+            Tracker = 17,
+            Miner = 18,
+            Geologist = 19,
+            Blacksmith = 20,
+            Burrower = 21,
+            Excavator = 22,
+            Gemologist = 23,
+            Fighter = 24,
+            Scout = 25,
+            Brute = 26,
+            Defender = 27,
+            Acrobat = 28,
+            Desperado = 29,
+        }
+        public enum TreeType
+        {
+            Oak = 1,
+            Maple = 2,
+            Pine = 3,
+            WinterTree1 = 4,
+            WinterTree2 = 5,
+            Palm = 6,
+            BigMushroom = 7,
+            Mahogany = 8,
+            Palm2 = 9,
+            GreenRainTreeBushing = 10,
+            GreenRainTreeLeafy = 11,
+            GreenRainTreeFern = 12,
+            Mystic = 13
+
+        }
+
+        public enum TreeStage
+        {
+            Seed = STree.seedStage,
+            Sprout = STree.sproutStage,
+            Sapling = STree.saplingStage,
+            Bush = STree.bushStage,
+            SmallTree = STree.treeStage - 1, // an intermediate stage between bush and tree, no constant
+            Tree = STree.treeStage
         }
     }
 }

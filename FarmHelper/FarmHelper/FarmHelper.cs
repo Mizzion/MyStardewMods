@@ -26,12 +26,14 @@ using xTile.Dimensions;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 using SFarmer = StardewValley.Farmer;
 using SObject = StardewValley.Object;
+using StardewValley.Buildings;
+using StardewValley.Characters;
 
 namespace FarmHelper
 {
     public class FarmHelper : Mod
     {
-        private ModConfig Config;
+        private ModConfig? Config;
 
         private IGenericModConfigMenuApi? _cfgMenu = null;
 
@@ -63,7 +65,7 @@ namespace FarmHelper
 
             events.GameLoop.GameLaunched += OnGameLaunched;
             events.Input.ButtonPressed += OnButtonPressed;
-            //events.GameLoop.DayStarted += OnDayStarted;
+            events.GameLoop.DayStarted += OnDayStarted;
             //events.GameLoop.DayEnding += OnDayEnding;
             events.Display.RenderedWorld += OnRenderedWorld;
             //events.GameLoop.UpdateTicked += OnUpdateTicked;
@@ -73,6 +75,12 @@ namespace FarmHelper
 
         private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
         {
+            if(Config is null)
+            {
+                Config = new ModConfig();
+                Helper.WriteConfig(Config);
+            }
+
             #region GMM Set ups
             //Set Up Generic Mod Menu Here
             _cfgMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
@@ -483,8 +491,9 @@ namespace FarmHelper
                 getValue: () => Config.Weapon.HarvestGrass,
                 setValue: value => Config.Weapon.HarvestGrass = value
             );
-            
-            _cfgMenu.AddSectionTitle(mod: ModManifest,text: () => " Animal Settings", tooltip: null);
+            #endregion
+            #region Animal Settings
+            _cfgMenu.AddSectionTitle(mod: ModManifest, text: () => " Animal Settings", tooltip: null);
             _cfgMenu.AddBoolOption(
                 mod: ModManifest,
                 name: () => "Pet Animals",
@@ -560,6 +569,58 @@ namespace FarmHelper
                 CommonHelper.DrawAffectedArea(Game1.spriteBatch, Helper, Config.AffectedArea, Config.UsePlayerOrMouse);
         }
 
+
+        private void OnDayStarted(object? sender, DayStartedEventArgs e)
+        {
+            if(!Config.Animals.EnablePetting) return;
+
+            Farmer farmer = Game1.player;
+            Farm farm = Game1.getFarm();
+
+            if(farmer.hasPet() && Config.Animals.EnablePetting)
+            {
+
+                try
+                {
+                    foreach (Pet pet in CommonHelper.GetPets())
+                    {
+                        pet.checkAction(farmer, farm);
+                    }
+                } catch (Exception ex)
+                {
+                    Monitor.Log($"Error while petting pets: {ex.Message}", LogLevel.Error);
+                }
+
+
+                WaterPetBowls();
+            }
+
+            foreach (FarmAnimal animal in CommonHelper.GetAnimals())
+            {
+                Random rnd = Utility.CreateRandom(animal.myID.Value / 2.0, Game1.stats.DaysPlayed);
+
+                try
+                {
+                    if (!animal.wasPet.Value && Config.Animals.EnablePetting)
+                    {
+                        animal.pet(farmer);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Monitor.Log($"Error while petting farm animals: {ex.Message}", LogLevel.Error);
+                }
+
+                if (Config.Animals.HarvestAnimalProducts)
+                {
+                    HarvestTruffles();
+                    HarvestCoops();
+                }
+
+
+            }
+
+        }   
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
             if (!Config.ModEnabled) return;
@@ -764,11 +825,33 @@ namespace FarmHelper
             SObject? tileObject, Item? item, Tool? tool)
         {
             if (item is null) return;
-            
+
+            if (!CommonHelper.GetHoeDirt(tileFeature, tileObject, out HoeDirt? dirt, out bool dirtCoveredByObj, out IndoorPot? pot) || dirt.crop != null || pot?.bush.Value is not null)
+                return;
+
+            if(dirtCoveredByObj || CommonHelper.IsResourceClumpOnTile(location, tile, Helper.Reflection))
+                return;
+
+            bool sowed = dirt.plant(item.ItemId, player, false);
+
+            if (sowed)
+            {
+                CommonHelper.UseItem(player, item);
+
+                if(CommonHelper.TryGetEnricher(location, tile, out Chest? enricher, out Item? fertilizer) &&
+                    dirt.plant(fertilizer.ItemId, player, true))
+                {
+                    CommonHelper.UseItem(enricher, fertilizer);
+                }
+            }
+
+
+            /*
             if (CommonHelper.GetHoeDirt(tileFeature, tileObject, out HoeDirt? dirt, out bool dirtCoveredByObj,
                     out IndoorPot? pot))
             {
                 //Try to add seed
+                
                 if (!dirtCoveredByObj && 
                     !CommonHelper.IsResourceClumpOnTile(location, tile, Helper.Reflection) && 
                     (dirt.crop == null ||
@@ -782,7 +865,9 @@ namespace FarmHelper
                         CommonHelper.UseItem(enricher, fertilizer);
                     }
                 }
-            }
+
+
+            }*/
         }
 
         private void UsePickAxeOnTile(Vector2 tile, SFarmer player, GameLocation location, TerrainFeature? tileFeature, 
@@ -1250,6 +1335,97 @@ namespace FarmHelper
 
         return false;
     }
-        #endregion
+
+    private void HarvestTruffles()
+    {
+            Farm farm = Game1.getFarm();
+            Farmer farmer = Game1.player;
+            Random random = new Random();
+
+            List<Vector2> truffles = new List<Vector2>();
+
+            foreach(KeyValuePair<Vector2, SObject> kvp in farm.objects.Pairs)
+            {
+                SObject truff = kvp.Value;
+
+                if(truff.Name == "Truffle")
+                {
+                    if (farmer.professions.Contains(16))
+                        truff.Quality = 4;
+
+                    double rnd = random.NextDouble();
+                    bool doubleTruffle = rnd < 0.2;
+                    int exp = doubleTruffle ? 14 : 7;
+
+
+                    if (farmer.professions.Contains(13) && doubleTruffle)
+                        truff.Stack = 2;
+
+                    if (farmer.couldInventoryAcceptThisItem(truff))
+                    {
+                        farmer.addItemToInventory(truff);
+
+                        truffles.Add(kvp.Key);
+                        farmer.gainExperience(2, exp);
+                        
+                    }
+
+                }
+            }
+
+            //Remove truffles from the farm
+            foreach(Vector2 truffleLocation in truffles)
+            {
+                farm.removeObject(truffleLocation, false);
+            }
+        }
+
+    private void HarvestCoops()
+    {
+        Farm farm = Game1.getFarm();
+        Farmer farmer = Game1.player;
+
+        foreach(Building building in farm.buildings)
+        {
+            if(!building.GetIndoorsType().Equals(IndoorsType.None) && building is Building && !building.GetIndoorsName().Equals("Greenhouse"))
+            {
+                List<Vector2> items = new List<Vector2>();
+
+                foreach(KeyValuePair<Vector2, SObject> kvp in building.GetIndoors().Objects.Pairs)
+                {
+                    SObject obj = kvp.Value;
+                        
+                    if(obj.isAnimalProduct() || obj.ParentSheetIndex == 107 && obj.Name != "Plush Bunny")
+                    {
+                        if(farmer.couldInventoryAcceptThisItem(obj))
+                        {
+                            farmer.addItemToInventory(obj);
+                            farmer.gainExperience(0, 5);
+                            items.Add(kvp.Key);
+                        }
+                    }
+                }
+
+                //Remove items from the coop
+                foreach (Vector2 itemLocation in items)
+                {
+                    building.GetIndoors().removeObject(itemLocation, false);
+                }
+            }               
+        }
+            
     }
+
+    private void WaterPetBowls()
+    {
+        foreach (GameLocation location in Game1.locations)
+        {
+            foreach (PetBowl bowl in location.buildings.OfType<PetBowl>())
+            {
+                bowl.watered.Set(true);
+            }
+        }
+    }
+        #endregion
+    }    
 }
